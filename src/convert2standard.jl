@@ -10,7 +10,7 @@ s.t. Ax = b
 x >= 0
 """
 function convert2standard(P)
-    inf = 1.0e300
+    inf = (eltype(P.A)<:Real) ? 1.0e300 : 2α
 
     m,n0 = size(P.A)
 
@@ -50,8 +50,8 @@ function convert2standard(P)
     cs = [P.c[index1,1]; -P.c[index1,1]; P.c[index2,1];
      -P.c[index3,1]; P.c[index4,1]; zeros(n[4],1)]
 
-    As = [P.A[:,index1] -P.A[:,index1] P.A[:,index2] -P.A[:,index3] P.A[:,index4] spzeros(m,n[4]);
-     spzeros(n[4],2*n[1]+n[2]+n[3]) Matrix{Float64}(I,n[4],n[4]) Matrix{Float64}(I,n[4],n[4])]
+    As = [P.A[:,index1] -P.A[:,index1] P.A[:,index2] -P.A[:,index3] P.A[:,index4] zeros(m,n[4]);
+     zeros(n[4],2*n[1]+n[2]+n[3]) Matrix{Float64}(I,n[4],n[4]) Matrix{Float64}(I,n[4],n[4])]
 
     bs = [P.b-P.A[:,index2]*P.lo[index2,1]-P.A[:,index3]*P.hi[index3,1]-P.A[:,index4]*P.lo[index4,1];
      P.hi[index4,1]-P.lo[index4,1]]
@@ -70,7 +70,7 @@ function get_x(P,ind1,ind2,ind3,ind4,xs)
     n3 = length(ind3)
     n4 = length(ind4)
 
-    x = zeros(n)
+    x = zeros(eltype(P.A), n)
 
     x[ind1] = xs[1:n1]-xs[1+n1:2*n1]
     x[ind2] = xs[1+2*n1:n2+2*n1]+P.lo[ind2]

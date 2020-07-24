@@ -2,6 +2,10 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false;adj=true)
     ### definition of gamma_f
 
     gamma_f = .01
+	
+	### definition of alpha_threshold
+	
+	alpha_threshold = (eltype(A)<:Real) ? 1e308 : α
 
     ### whether scaling is used
     
@@ -50,8 +54,8 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false;adj=true)
         
         ### solve 10.7 
 
-        rb = spzeros(m)
-        rc = spzeros(n)
+        rb = zeros(m)
+        rc = zeros(n)
         rxs = x_aff.*s_aff.-sigma*mu
 
         lambda_cc,x_cc,s_cc = solve3(f3,A,x0,s0,rb,rc,rxs)
@@ -61,6 +65,8 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false;adj=true)
         dx = x_aff+x_cc
         dlambda = lambda_aff+lambda_cc
         ds = s_aff+s_cc
+		
+		#print("dx: "); println(dx)
 
         alpha_max_pri = alpha_max(x0,dx,Inf)
         #=
@@ -92,7 +98,7 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false;adj=true)
 
         # decide if the problem is unbounded
 
-        if alpha_pri > 1e308 || alpha_dual > 1e308
+        if alpha_pri > alpha_threshold || alpha_dual > alpha_threshold
             @warn("This problem is unbounded")
             println(alpha_pri)
             println(alpha_dual)
@@ -107,43 +113,38 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false;adj=true)
 
 
         # @show dot(c,x1)
-        if verbose == true
+		#print("Obj: "); println(dot(c,x1))
+		print("x: "); println(x1[1:2])
+        #if verbose == true
             # @printf("%3d %9.2e %9.2e %9.4g %9.4g\n", iter, mu, norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c]), alpha_pri, alpha_dual);
-            print(iter); print(" "); print(mu); print(" "); print(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print(" "); print(alpha_pri); print(" "); println(alpha_dual); 
-        end
+            #print(iter); print(" "); print(mu); print(" "); print(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print(" "); print(alpha_pri); print(" "); println(alpha_dual); 
+        #end
 
         ### termination
 
         r1 = norm(A*x1-b)/(1+norm(b))
         # @show r1
+		print("r1: "); println(r1);
 
-        if r1 < tol
+        if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num[1:1+r1.p]) #r1 < tol #
 
             r2 = norm(A'*lambda1+s1-c)/(1+norm(c))
             # @show r2
+			print("r2: "); println(r2);
 
-            if r2 < tol
+            if (typeof(r2)<:Real) ? r2 < tol : all(z->abs(z) < tol, r2.num[1:1+r2.p]) #r2 < tol #
 
                 cx = dot(c,x1)
                 r3 = abs(cx-dot(b,lambda1))/(1+abs(cx))
                 # @show r3
+				print("r3: "); println(r3);
 
-                if r3 < tol
-                    print("r1: "); println(r1);
-                    print("r2: "); println(r2);
-                    print("r3: "); println(r3);
+                if (typeof(r3)<:Real) ? r3 < tol : all(z->abs(z) < tol, r3.num[1:1+r3.p]) #r3 < tol #
                     println("");
-                    #=
-                    if degree(tol) == 0 && adj
-                        tol *= η;
-                        println("adjusted tolerance");
-                        println("")
-                    else
-                    =#
-                        global flag = true
-                        global x1,lambda1,s1
-                        break
-                    #end
+
+					global flag = true
+					global x1,lambda1,s1
+					break
                 end
             end
         end

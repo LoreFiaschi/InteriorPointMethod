@@ -3,11 +3,11 @@
 function fact3(A,x,s)
     m,n = size(A)
 
-    M = [spzeros(m,m) A spzeros(m,n);
-     A' spzeros(n,n) Matrix{Float64}(I,n,n);
-      spzeros(n,m) spdiagm(0=>s[:,1]) spdiagm(0=>x[:,1])]
+    M = [zeros(m,m) A zeros(m,n);
+     A' zeros(n,n) Matrix{Float64}(I,n,n);
+      zeros(n,m) spdiagm(0=>s[:,1]) spdiagm(0=>x[:,1])]
 
-    f = lu(convert(Matrix, M)) # convertion added to compute "\" for non-sparse matrix of Bans
+    f = lu(M)
 
     return f
 end

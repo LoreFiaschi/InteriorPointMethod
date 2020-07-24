@@ -11,7 +11,7 @@ A = [2 1 1 0 0  0;
 A = convert(SparseMatrixCSC{Int64}, A);     
      
 lo = zeros(6);
-hi = [60;70;b]
+hi = [60;70;b[1:end-1];Inf];
 
 Problem = IplpProblem(c, A, b, lo, hi);
 
@@ -20,4 +20,4 @@ sol = iplp(Problem, tol; maxit=100);
 
 println(sol.flag)
 println(sol.x)
-println(sol.iter)
+#println(sol.iter)

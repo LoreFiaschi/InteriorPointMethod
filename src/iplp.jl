@@ -26,7 +26,7 @@ end
 
 struct IplpProblem
     c::Vector
-    A::SparseMatrixCSC
+    A::Matrix #SparseMatrixCSC
     b::Vector
     lo::Vector
     hi::Vector

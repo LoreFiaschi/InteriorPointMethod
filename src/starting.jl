@@ -4,6 +4,12 @@ obtain the starting point for PD method
 """
 
 function starting_point(A,b,c)
+	#=
+	println("");
+	println("");
+	print("A: "); println(A);
+	println("");
+	=#
     AA = A*A'
 
     f = cholesky(AA)
@@ -19,7 +25,14 @@ function starting_point(A,b,c)
 
     s = A'*lambda
     s = c-s
-
+	#=
+	print("x: "); println(x);
+	println("");
+	print("lambda: "); println(lambda);
+	println("");
+	print("s: "); println(s);
+	println("");
+	=#
     # hat
     dx = max(-1.5*minimum(x),0.0)
     ds = max(-1.5*minimum(s),0.0)
@@ -32,7 +45,13 @@ function starting_point(A,b,c)
 
     dx = xs/sum(s)
     ds = xs/sum(x)
-
+	#=
+	print("dx: "); println(dx);
+	println("");
+	print("ds: "); println(ds);
+	println("");
+	println("");
+	=#
     x = x.+dx
     s = s.+ds
 
