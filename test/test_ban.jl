@@ -1,5 +1,6 @@
 include("../src/iplp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
+include("../../Utils/src/createTable.jl")
 
 using .BAN
 
@@ -17,13 +18,35 @@ A = convert(Matrix{Ban}, A);
 #A = convert(SparseMatrixCSC{Ban}, A);     
      
 lo = zeros(6);
-hi = [60;70;b[1:end-1];Inf];
+#hi = [60;70;b[1:end-1];140];
+hi = [Inf;Inf;Inf;Inf;Inf;Inf];
 
 Problem = IplpProblem(c, A, b, lo, hi);
 
 tol=1e-8;
-#tol = Ban(0, ones(3).*1e-8, false);
-sol = iplp(Problem, tol; maxit=100);
+genLatex = false;
+verbose = false;
 
-println(sol.flag)
-println(sol.x)
+if genLatex
+	preamble();
+end
+
+sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex);
+
+if genLatex
+	epilogue();
+	println("");
+	println("");
+	println("");
+	preamble();
+	println("\t\$\\bm{r_1}\$ & \$\\bm{r_1}\$ & \$\\bm{r_1}\$ \\\\");
+	println("\t\\hline");
+	for (r1, r2, r3) in eachrow(sol.r)
+		print("\t \$"); print_latex(r1, digits=10); print("\$ & \$"); print_latex(r2, digits=10); print("\$ & \$"); print_latex(r3, digits=10); println("\$ \\\\"); 
+		println("\t\\hline");
+	end
+	epilogue();
+end
+
+#println(sol.flag)
+#println(sol.x)

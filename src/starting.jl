@@ -18,6 +18,8 @@ function starting_point(A,b,c)
 
     # tilde
     x = f\b
+	#println(b);
+	#error()
     x = A'*x
 
     lambda = A*c

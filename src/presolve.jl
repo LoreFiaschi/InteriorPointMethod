@@ -131,3 +131,7 @@ function revProb(P, ind0c, dup_main_c, ind_dup_c, x1)
     
     return x
 end
+
+function revProb(r, x1)
+	return revProb(r.P, r.ind0c, r.dup_main_c, r.ind_dup_c, x1)
+end

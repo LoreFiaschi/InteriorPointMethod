@@ -79,3 +79,7 @@ function get_x(P,ind1,ind2,ind3,ind4,xs)
 
     return x
 end
+
+function get_x(g, xs)
+	return get_x(g.P, g.ind1, g.ind2, g.ind3, g.ind4, xs)
+end

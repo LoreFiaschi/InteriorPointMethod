@@ -22,6 +22,7 @@ struct IplpSolution
     xs::Vector # the solution in standard form
     lam::Vector # the solution lambda in standard form
     s::Vector # the solution s in standard form
+	r::Matrix # the residuals history vector
 end  
 
 struct IplpProblem
@@ -30,6 +31,26 @@ struct IplpProblem
     b::Vector
     lo::Vector
     hi::Vector
+end
+
+struct DataGet
+	P
+	ind1
+	ind2
+	ind3
+	ind4
+end
+
+struct DataRev
+	P
+	ind0c
+	dup_main_c
+	ind_dup_c
+end
+
+struct DataLatex
+	g::DataGet
+	r::DataRev
 end
 
 function convert_matrixdepot(mmmeta)
@@ -74,40 +95,41 @@ norm([As'*lam + s - cs; As*xs - bs; xs.*s])/norm([bs;cs]) <= tol
 and fails if this takes more than maxit iterations.
 """
 
-function iplp(Problem, tol; maxit=100)
+function iplp(Problem, tol; maxit=100, verbose=false, genLatex=false)
     ### test input data
     
-    @show m0,n0 = size(Problem.A)
+    #@show 
+	m0,n0 = size(Problem.A)
     
     if length(Problem.b) != m0 || length(Problem.c) != n0 || length(Problem.lo) != n0 || length(Problem.hi) != n0
         DimensionMismatch("Dimension of matrices A, b, c mismatch. Check your input.")
     end
 
-    @printf("Problem size: %d, %d\n",m0,n0)
+    #@printf("Problem size: %d, %d\n",m0,n0)
 
     ### presolve stage
 
     Ps, ind0c, dup_main_c, ind_dup_c = presolve(Problem)
 
     ### convert to standard form
-    @show size(Ps.A)
+    #@show size(Ps.A)
     #@show rank(Array{Float64}(Ps.A))
     
     A,b,c,ind1,ind2,ind3,ind4 = convert2standard(Ps)
-    @show size(A)
+    #@show size(A)
     #@show rank(Array{Float64}(A))
     ### detect infeasibility
 
     if phaseone(A,b)
         @warn "This problem is infeasible."
-        return IplpSolution(vec([0.]),false,vec(c),A,vec(b),vec([0.]),vec([0.]),vec([0.]))
+        return IplpSolution(vec([0.]),false,vec(c),A,vec(b),vec([0.]),vec([0.]),vec([0.]),[])
     end
 
-    @printf("\n=============== MPCIP solver ===============\n%3s %6s %11s %9s %9s\n", "ITER", "MU", "RESIDUAL", "ALPHAX", "ALPHAS")
+    #@printf("\n=============== MPCIP solver ===============\n%3s %6s %11s %9s %9s\n", "ITER", "MU", "RESIDUAL", "ALPHAX", "ALPHAS")
 
     ### solve the original problem
 
-    x1,lambda1,s1,flag,iter = solve_standardlp(A,b,c,maxit,tol,true)
+    x1,lambda1,s1,flag,iter,r = solve_standardlp(A,b,c,maxit,tol,verbose,genLatex,adj=true,data_latex=DataLatex(DataGet(Ps,ind1,ind2,ind3,ind4), DataRev(Problem, ind0c, dup_main_c, ind_dup_c)))
 
     @printf("============================================\n")
 
@@ -124,5 +146,5 @@ function iplp(Problem, tol; maxit=100)
         @printf("\nThis problem does not converge in %d steps.", maxit)
     end
 
-    return IplpSolution(vec(x),flag,vec(c),A,vec(b),vec(x1),vec(lambda1),vec(s1))
+    return IplpSolution(vec(x),flag,vec(c),A,vec(b),vec(x1),vec(lambda1),vec(s1),r)
 end

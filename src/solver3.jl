@@ -5,8 +5,21 @@ function fact3(A,x,s)
 
     M = [zeros(m,m) A zeros(m,n);
      A' zeros(n,n) Matrix{Float64}(I,n,n);
-      zeros(n,m) spdiagm(0=>s[:,1]) spdiagm(0=>x[:,1])]
+      zeros(n,m) diagm(s[:,1]) diagm(x[:,1])]
 
+#=
+	println(s);
+	println("");
+	println(diagm(0=>s[:,1]));
+	println("");
+	println(x);
+	println("");
+	println(diagm(0=>x[:,1]))
+	println("");
+	error();
+=#
+	#println(M);
+	#println("");
     f = lu(M)
 
     return f
