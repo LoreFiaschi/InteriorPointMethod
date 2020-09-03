@@ -23,8 +23,8 @@ hi = [Inf;Inf;Inf;Inf;Inf;Inf];
 
 Problem = IplpProblem(c, A, b, lo, hi);
 
-tol=1e-8;
-genLatex = false;
+tol=1e-16;
+genLatex = true;
 verbose = false;
 
 if genLatex
@@ -42,11 +42,8 @@ if genLatex
 	println("\t\$\\bm{r_1}\$ & \$\\bm{r_1}\$ & \$\\bm{r_1}\$ \\\\");
 	println("\t\\hline");
 	for (r1, r2, r3) in eachrow(sol.r)
-		print("\t \$"); print_latex(r1, digits=10); print("\$ & \$"); print_latex(r2, digits=10); print("\$ & \$"); print_latex(r3, digits=10); println("\$ \\\\"); 
+		print("\t \$"); print_latex(r1); print("\$ & \$"); print_latex(r2); print("\$ & \$"); print_latex(r3); println("\$ \\\\"); 
 		println("\t\\hline");
 	end
 	epilogue();
 end
-
-#println(sol.flag)
-#println(sol.x)
