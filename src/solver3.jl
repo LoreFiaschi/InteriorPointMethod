@@ -4,8 +4,8 @@ function fact3(A,x,s)
     m,n = size(A)
 
     M = [zeros(m,m) A zeros(m,n);
-     A' zeros(n,n) Matrix{Float64}(I,n,n);
-      zeros(n,m) diagm(s[:,1]) diagm(x[:,1])]
+	     A' zeros(n,n) Matrix{Float64}(I,n,n);
+	     zeros(n,m) diagm(s[:,1]) diagm(x[:,1])]
 
 #=
 	println(s);

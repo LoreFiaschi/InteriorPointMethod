@@ -39,7 +39,7 @@ if genLatex
 	println("");
 	println("");
 	preamble();
-	println("\t\$\\bm{r_1}\$ & \$\\bm{r_1}\$ & \$\\bm{r_1}\$ \\\\");
+	println("\t\$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
 	println("\t\\hline");
 	for (r1, r2, r3) in eachrow(sol.r)
 		print("\t \$"); print_latex(r1); print("\$ & \$"); print_latex(r2); print("\$ & \$"); print_latex(r3); println("\$ \\\\"); 

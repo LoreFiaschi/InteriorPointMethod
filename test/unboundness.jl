@@ -7,19 +7,15 @@ using .BAN
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
 
 c = [-1, -1, 0, 0, 0];
+#b = [1, 1, 1000];
 b = [1, 1, α];
+#b = [η, η, 1];
 
 A = [-2  1 1  0  0;
       1 -1 0  1  0;
 	  1  1 0  0  1];
 
-#=
-b = [η, η, 1];
 
-A = [-2  1 1  0  0;
-      1 -1 0  1  0;
-	  1  1 0  0  1];
-=#
 	  
 lo = zeros(5);
 #hi = [α/2;α/2;α+1;α/2+1;α];
@@ -60,7 +56,7 @@ if genLatex
 	println("");
 	println("");
 	preamble();
-	println("\t\$\\bm{r_1}\$ & \$\\bm{r_1}\$ & \$\\bm{r_1}\$ \\\\");
+	println("\t\$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
 	println("\t\\hline");
 	for (r1, r2, r3) in eachrow(sol.r)
 		print("\t \$"); print_latex(r1); print("\$ & \$"); print_latex(r2); print("\$ & \$"); print_latex(r3); println("\$ \\\\"); 

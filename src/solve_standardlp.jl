@@ -46,8 +46,9 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		#=
 		print("x: "); println(x0);
 		print("s: "); println(s0);
+		println("")
 		=#
-		
+
 		#=
 		if data_latex!=[]
 			println(x0);
@@ -74,6 +75,7 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		print("rc: "); println(rc);
 		print("rxs: "); println(rxs);
 		print("mu: "); println(mu)
+		println("")
 		=#
 
         lambda_aff,x_aff,s_aff = solve3(f3,A,x0,s0,rb,rc,rxs)
@@ -85,7 +87,13 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 
         ### calculate alpha_aff^pri, alpha_aff^dual, mu_aff
 
+		#println("alpha_max x");
         alpha_aff_pri  = alpha_max(x0,x_aff,1.0)
+		
+		#=
+		println("");
+		println("alpha_max s");
+		=#
         alpha_aff_dual = alpha_max(s0,s_aff,1.0)
 
         mu_aff = dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n 
@@ -120,16 +128,29 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		
 		#print("dx: "); println(dx)
 
-        alpha_max_pri = alpha_max(x0,dx,Inf)
-		
+		#=
+		println("");
+		println("alpha_max x");
+		=#
+        alpha_max_pri = alpha_max(x0,dx,Inf)		
+
         #=
         print("s0: "); println(s0);
         print("ds: "); println(ds);
         println("")
         =#
-		
+		#=
+		println("");
+		println("alpha_max s");
+		=#
         alpha_max_dual = alpha_max(s0,ds,Inf)
-        
+
+		#=
+		print("alpha_aff_pri: "); println(alpha_aff_pri);
+		print("alpha_aff_dual: "); println(alpha_aff_dual);
+		print("alpha_max_pri: "); println(alpha_max_pri);
+		print("alpha_max_dual: "); println(alpha_max_dual);
+        =#
 		
         if scaling == 0
             alpha_pri = min(0.99*alpha_max_pri,1)
@@ -152,8 +173,8 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		
 		#=
 		print("alpha_x: "); println(alpha_pri);
+		print("alpha_s: "); println(alpha_dual);	
 		print("dx: "); println(dx);
-		print("alpha_s: "); println(alpha_dual);
 		print("ds: "); println(ds);
 		println("");
 		println("");
@@ -191,10 +212,10 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
         ### termination
 
 		#println(A*x1-b)
-		r1 = norm(A*x1-b)/(1+norm(b))
-		r2 = norm(A'*lambda1+s1-c)/(1+norm(c))
+		r1 = denoise(norm(A*x1-b), tol)/(1+norm(b))
+		r2 = denoise(norm(A'*lambda1+s1-c), tol)/(1+norm(c))
 		cx = dot(c,x1)
-		r3 = abs(cx-dot(b,lambda1))/(1+abs(cx))
+		r3 = denoise(abs(cx-dot(b,lambda1)), tol)/(1+abs(cx))
 		
 		if genLatex			
 			r = [r
@@ -203,9 +224,13 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
         # @show r1
 		
 		#=
+		#print("cx: "); println(cx);
+		#print("bl: "); println(dot(b,lambda1));
+		
 		print("r1: "); println(r1);
 		print("r2: "); println(r2);
 		print("r3: "); println(r3);
+		println("");
 		=#
 
         if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num) 
