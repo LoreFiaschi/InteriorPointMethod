@@ -95,7 +95,7 @@ norm([As'*lam + s - cs; As*xs - bs; xs.*s])/norm([bs;cs]) <= tol
 and fails if this takes more than maxit iterations.
 """
 
-function iplp(Problem, tol; maxit=100, verbose=false, genLatex=false)
+function iplp(Problem, tol; maxit=100, verbose=false, genLatex=false, slack_var=[])
     ### test input data
     
     #@show 
@@ -119,17 +119,19 @@ function iplp(Problem, tol; maxit=100, verbose=false, genLatex=false)
     #@show size(A)
     #@show rank(Array{Float64}(A))
     ### detect infeasibility
-
+	
+	#=
+	
     if phaseone(A,b)
         @warn "This problem is infeasible."
         return IplpSolution(vec([0.]),false,vec(c),A,vec(b),vec([0.]),vec([0.]),vec([0.]),[])
     end
-
+	
+	=#
     #@printf("\n=============== MPCIP solver ===============\n%3s %6s %11s %9s %9s\n", "ITER", "MU", "RESIDUAL", "ALPHAX", "ALPHAS")
 
     ### solve the original problem
-
-    x1,lambda1,s1,flag,iter,r = solve_standardlp(A,b,c,maxit,tol,verbose,genLatex,adj=true,data_latex=DataLatex(DataGet(Ps,ind1,ind2,ind3,ind4), DataRev(Problem, ind0c, dup_main_c, ind_dup_c)))
+    x1,lambda1,s1,flag,iter,r = solve_standardlp(A,b,c,maxit,tol,verbose,genLatex,adj=true,data_latex=DataLatex(DataGet(Ps,ind1,ind2,ind3,ind4), DataRev(Problem, ind0c, dup_main_c, ind_dup_c)),slack_var=slack_var)
 
     @printf("============================================\n")
 

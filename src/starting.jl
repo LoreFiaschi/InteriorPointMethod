@@ -18,19 +18,17 @@ function starting_point(A,b,c)
 
     # tilde
     x = f\b
-	#println(b);
-	#error()
     x = A'*x
+	
+    λ = A*c
+    λ = f\λ
 
-    lambda = A*c
-    lambda = f\lambda
-
-    s = A'*lambda
+    s = A'*λ
     s = c-s
 	#=
 	print("x: "); println(x);
 	println("");
-	print("lambda: "); println(lambda);
+	print("λ: "); println(λ);
 	println("");
 	print("s: "); println(s);
 	println("");
@@ -57,5 +55,5 @@ function starting_point(A,b,c)
     x = x.+dx
     s = s.+ds
 
-    return x,lambda,s
+    return x,λ,s
 end

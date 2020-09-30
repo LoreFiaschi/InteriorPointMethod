@@ -1,4 +1,4 @@
-function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;adj=true,data_latex=[])
+function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;adj=true,data_latex=[],slack_var=[])
     ### definition of gamma_f
 	
 	if genLatex && data_latex==[]
@@ -16,6 +16,8 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
     scaling = 0
 
     m,n = size(A)
+	
+	var_to_show = setdiff(1:n, slack_var);
 
     ### compute initial value (x^0,lambda^0,s^0)
     
@@ -29,12 +31,10 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 	r = Matrix(undef, 0, 3);
 
 	if genLatex
-		#println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \\textbf{residual} & \$\\bm{\\alpha_x}\$ & \$\\bm{\\alpha_s}\$ & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\hline");
 		tmp_x = revProb(data_latex.r, get_x(data_latex.g, x0));
-		#print("\t$(iter) & "); print_latex(mean(x0.*s0)); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print("0 & 0 & "); print_latex(tmp_x); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\& \\\\");
-		print("\t$(iter) & \$"); print_latex(mean(x0.*s0)); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print_latex(tmp_x); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\$ \\\\");
+		print("\t$(iter) & \$"); print_latex(mean(x0.*s0)); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print_latex(tmp_x[var_to_show]); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\$ \\\\");
 		println("\t\\hline");
     elseif verbose
         print(iter); print(" "); print(mean(x0.*s0)); print(" "); print(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print(" "); println("0., 0."); 
@@ -201,8 +201,7 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		#print("x: "); println(x1[1:2])
         if genLatex
 			tmp_x = revProb(data_latex.r, get_x(data_latex.g, x1));
-			#print("\t$(iter) & \$"); print_latex(mu); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print_latex(alpha_pri); print("\$ & \$"); print_latex(alpha_dual); print("\$ & \$"); print_latex(tmp_x); print_latex(tmp_x); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\$ \\\\");
-			print("\t$(iter) & \$"); print_latex(mu); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print_latex(tmp_x); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\$ \\\\");
+			print("\t$(iter) & \$"); print_latex(mu); print("\$ & \$"); print_latex(norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c])); print("\$ & \$"); print_latex(tmp_x[var_to_show]); print("\$ & \$"); print_latex(dot(data_latex.r.P.c, tmp_x)); println("\$ \\\\");
 			println("\t\\hline");
 		elseif verbose
             # @printf("%3d %9.2e %9.2e %9.4g %9.4g\n", iter, mu, norm([A'*lambda0 + s0 - c; A*x0 - b; x0.*s0])/norm([b;c]), alpha_pri, alpha_dual);

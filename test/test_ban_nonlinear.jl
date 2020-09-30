@@ -1,4 +1,4 @@
-include("../src/iplp.jl")
+include("../src/quadratic/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
@@ -13,15 +13,13 @@ A = [2 1 1 0 0  0;
      2 3 0 1 0  0;
      4 3 0 0 1  0;
      1 2 0 0 0 -1];
+	 
+Q = zeros(6,6)
 
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
-     
-lo = zeros(6);
-#hi = [60;70;b[1:end-1];140];
-hi = [Inf;Inf;Inf;Inf;Inf;Inf];
 
-Problem = IplpProblem(c, A, b, lo, hi);
+b = convert(Vector{Ban}, b)
 
 tol=1e-16;
 genLatex = true;
@@ -31,7 +29,7 @@ if genLatex
 	preamble();
 end
 
-sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
+sol = ipqp(A,b,c,Q, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
 
 if genLatex
 	epilogue();
@@ -39,7 +37,7 @@ if genLatex
 	println("");
 	println("");
 	preamble();
-	println("\t\$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
+	println("\t\\textbf{iter} & \$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
 	println("\t\\hline");
 	iter = 0;
 	for (r1, r2, r3) in eachrow(sol.r)

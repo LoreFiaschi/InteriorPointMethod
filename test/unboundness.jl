@@ -48,7 +48,7 @@ if genLatex
 end
 
 tol=1e-16;
-sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex);
+sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:5);
 
 if genLatex
 	epilogue();
@@ -56,10 +56,12 @@ if genLatex
 	println("");
 	println("");
 	preamble();
-	println("\t\$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
+	println("\t\\textbf{iter} & \$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
 	println("\t\\hline");
+	iter = 0
 	for (r1, r2, r3) in eachrow(sol.r)
-		print("\t \$"); print_latex(r1); print("\$ & \$"); print_latex(r2); print("\$ & \$"); print_latex(r3); println("\$ \\\\"); 
+		global iter+=1;
+		print("\t $(iter) & \$"); print_latex(r1); print("\$ & \$"); print_latex(r2); print("\$ & \$"); print_latex(r3); println("\$ \\\\"); 
 		println("\t\\hline");
 	end
 	epilogue();

@@ -1,4 +1,4 @@
-include("../src/iplp.jl")
+include("../src/quadratic/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
@@ -6,22 +6,28 @@ using .BAN
 
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
 
-c = [-8-4η, -12-10η, 0, 0, 0, 0];
-b = [120, 210, 270, 60];
+#=
+Q = [-1 -η 0 0 0 0
+	 -η -1 0 0 0 0
+	  ]
+=#
+  
+Q = zeros(Ban, 6, 6);
+Q[1,1] = -1;
+Q[2,2] = -1;
+#Q[1,2] = -η;
+#Q[2,1] = -η;
 
-A = [2 1 1 0 0  0;
-     2 3 0 1 0  0;
-     4 3 0 0 1  0;
-     1 2 0 0 0 -1];
+c = [2, 2-η, 0, 0, 0, 0];
+b = [1, 1, 3, -1];
+
+A = [-1 1 1  0 0  0;
+      1 1 0 -1 0  0;
+      1 1 0  0 1  0;
+     -1 1 0  0 0 -1];
 
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
-     
-lo = zeros(6);
-#hi = [60;70;b[1:end-1];140];
-hi = [Inf;Inf;Inf;Inf;Inf;Inf];
-
-Problem = IplpProblem(c, A, b, lo, hi);
 
 tol=1e-16;
 genLatex = true;
@@ -31,7 +37,7 @@ if genLatex
 	preamble();
 end
 
-sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
+sol = ipqp(A,b,c,Q, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
 
 if genLatex
 	epilogue();
@@ -39,7 +45,7 @@ if genLatex
 	println("");
 	println("");
 	preamble();
-	println("\t\$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
+	println("\t\\textbf{iter} & \$\\bm{r_1}\$ & \$\\bm{r_2}\$ & \$\\bm{r_3}\$ \\\\");
 	println("\t\\hline");
 	iter = 0;
 	for (r1, r2, r3) in eachrow(sol.r)
