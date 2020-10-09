@@ -1,16 +1,10 @@
-include("../src/quadratic/ipqp.jl")
+include("../src/iplp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
 using .BAN
 
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
-  
-Q = zeros(Ban, 6, 6);
-#Q[1,1] = -2;
-#Q[2,2] = -2;
-#Q[1,2] = -η;
-#Q[2,1] = -η;
 
 #c = [2-η, 2-η-η*η, 0, 0, 0, 0];
 c = [-1, -1-η, 0, 0, 0, 0];
@@ -25,6 +19,11 @@ A = [-1 1 1  0 0  0;    # y <=  x + 1
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
+lo = zeros(6);
+hi = [Inf;Inf;Inf;Inf;Inf;Inf];
+
+Problem = IplpProblem(c, A, b, lo, hi);
+
 tol=1e-16;
 genLatex = true;
 verbose = false;
@@ -33,7 +32,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
+sol = iplp(Problem, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
 
 if genLatex
 	epilogue();

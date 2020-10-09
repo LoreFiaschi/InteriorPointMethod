@@ -47,6 +47,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		μ = mean(rxs)
 
         λ_aff,x_aff,s_aff = solve3(f3,x,s,rb,rc,rxs)
+
+		print("x_aff: "); println(x_aff);
+		print("λ_aff: "); println(λ_aff);
+		print("s_aff: "); println(s_aff);
+		println("");
 		
 		###########################
         # calculate α_aff, μ_aff #
@@ -58,7 +63,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		print("α_aff_pri: "); println(α_aff_pri); println("");
 		print("α_aff_dual: "); println(α_aff_dual); println("");
 		
-        μ_aff = denoise(dot(x+α_aff_pri*x_aff,s+α_aff_dual*s_aff)/n , tol)
+        μ_aff = dot(x+α_aff_pri*x_aff,s+α_aff_dual*s_aff)/n #denoise(dot(x+α_aff_pri*x_aff,s+α_aff_dual*s_aff)/n , tol)
         σ = (μ_aff/μ)^3
 		
 		print("μ_aff: "); println(μ_aff); println("");
@@ -73,6 +78,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         rxs = x_aff.*s_aff.-σ*μ 
 
         λ_cc,x_cc,s_cc = solve3(f3,x,s,rb,rc,rxs)
+
+		print("x_cc: "); println(x_cc);
+		print("λ_cc: "); println(λ_cc);
+		print("s_cc: "); println(s_cc);
+		println("");
 		
 		##############################
         # compute direction and step #
@@ -81,6 +91,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         dx = x_aff+x_cc
         dλ = λ_aff+λ_cc
         ds = s_aff+s_cc
+
+		print("dx: "); println(dx);
+		print("dλ: "); println(dλ);
+		print("ds: "); println(ds);
+		println("");
 		
         α_pri = min(0.99*alpha_max(x,dx,Inf),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf),1)
