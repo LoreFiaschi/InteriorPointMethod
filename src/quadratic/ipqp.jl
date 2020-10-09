@@ -73,7 +73,8 @@ function ipqp(A,b,c,Q,tol; maxit=100, verbose=false, genLatex=false, slack_var=[
     x,λ,s,flag,iter,r = solve_standardqp(A,b,c,Q,tol,maxit,verbose=verbose,genLatex=genLatex,adj=true,slack_var=slack_var)
 
     if flag == true
-        print("This problem is solved with optimal value of "); println(dot(c, x));
+        print("This problem is solved with optimal value of "); println(0.5*(x'*Q*x)+dot(c, x));
+		print("The optimal solution is: "); println(x[setdiff(1:n0, slack_var)]);
     end
 
     return IpqpSolution(vec(x),flag,vec(λ),vec(s),r)

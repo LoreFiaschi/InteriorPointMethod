@@ -26,7 +26,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\μ}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\hline");
-		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(dot(c, x)); println("\$ \\\\");
+		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 		println("\t\\hline");
     elseif verbose
         print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print(" "); println("0., 0."); 
@@ -113,10 +113,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 		r1 = denoise(norm(A*x-b), tol)/(1+norm(b))
 		r2 = denoise(norm(A'*λ+s-c-Q*x), tol)/(1+norm(c))
-		r3 = denoise(dot(x,s), tol)/(1+abs(dot(c,x)+x'*Q*x))
+		r3 = denoise(dot(x,s), tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
 
         if genLatex
-			print("\t$(iter) & \$"); print_latex(μ); print("\$ & \$"); print_latex(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(dot(c, x)); println("\$ \\\\");
+			print("\t$(iter) & \$"); print_latex(μ); print("\$ & \$"); print_latex(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 			println("\t\\hline");
 			r = [r
 				 r1 r2 r3];
