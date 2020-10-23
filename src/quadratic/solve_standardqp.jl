@@ -48,10 +48,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         λ_aff,x_aff,s_aff = solve3(f3,x,s,rb,rc,rxs)
 
+		#=
 		print("x_aff: "); println(x_aff);
 		print("λ_aff: "); println(λ_aff);
 		print("s_aff: "); println(s_aff);
 		println("");
+		=#
 		
 		###########################
         # calculate α_aff, μ_aff #
@@ -60,15 +62,19 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         α_aff_pri  = alpha_max(x,x_aff,1.0)
         α_aff_dual = alpha_max(s,s_aff,1.0)
 		
+		#=
 		print("α_aff_pri: "); println(α_aff_pri); println("");
 		print("α_aff_dual: "); println(α_aff_dual); println("");
+		=#
 		
         μ_aff = dot(x+α_aff_pri*x_aff,s+α_aff_dual*s_aff)/n #denoise(dot(x+α_aff_pri*x_aff,s+α_aff_dual*s_aff)/n , tol)
         σ = (μ_aff/μ)^3
 		
+		#=
 		print("μ_aff: "); println(μ_aff); println("");
 		print("σ: "); println(σ); println("");
-        
+        =#
+		
 		##############
         # solve 10.7 #
 		##############
@@ -79,10 +85,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         λ_cc,x_cc,s_cc = solve3(f3,x,s,rb,rc,rxs)
 
+		#=
 		print("x_cc: "); println(x_cc);
 		print("λ_cc: "); println(λ_cc);
 		print("s_cc: "); println(s_cc);
 		println("");
+		=#
 		
 		##############################
         # compute direction and step #
@@ -92,17 +100,21 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         dλ = λ_aff+λ_cc
         ds = s_aff+s_cc
 
+		#=
 		print("dx: "); println(dx);
 		print("dλ: "); println(dλ);
 		print("ds: "); println(ds);
 		println("");
+		=#
 		
         α_pri = min(0.99*alpha_max(x,dx,Inf),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf),1)
 		
+		#=
 		print("α_pri: "); println(α_pri); println("");
 		print("α_dual: "); println(α_dual); println("");
-
+		=#
+		
 		#######################
         # check unboundedness #
 		#######################
