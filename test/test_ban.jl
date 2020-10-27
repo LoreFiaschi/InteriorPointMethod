@@ -6,8 +6,8 @@ using .BAN
 
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
 
-#c = [-8-14η, -12, 0, 0, 0, 0];
-c = [-8-4η, -12-10η, 0, 0, 0, 0];
+c = [-8-14η, -12, 0, 0, 0, 0];
+#c = [-8-4η, -12-10η, 0, 0, 0, 0];
 b = [120, 210, 270, 60];
 
 A = [2 1 1 0 0  0;

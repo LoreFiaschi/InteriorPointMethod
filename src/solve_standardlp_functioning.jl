@@ -112,18 +112,15 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		print("m_inf: "); println(x_aff_inf[1]/x_aff_inf[2])
 		println("")
 
+		lambda_aff_true = lambda_aff = lambda_aff_fin + lambda_aff_inf #+ lambda_aff_fix 
+		x_aff_true = x_aff = x_aff_fin + x_aff_inf #+ x_aff_fix
+		s_aff_true = s_aff = s_aff_fin + s_aff_inf #+ s_aff_fix
+
 		if mu < 1e-8
-			lambda_aff_fin = zeros(m)
-			x_aff_fin = zeros(n)
-			s_aff_fin = zeros(n)
-			lambda_aff_inf.*=α
-			x_aff_inf.*=α 
-			s_aff_inf.*=α
+			lambda_aff_true = lambda_aff_inf.*α
+			x_aff_true = x_aff_inf.*α 
+			s_aff_true = s_aff_inf.*α
 		end		
-		
-		lambda_aff = lambda_aff_fin + lambda_aff_inf #+ lambda_aff_fix 
-		x_aff = x_aff_fin + x_aff_inf #+ x_aff_fix
-		s_aff = s_aff_fin + s_aff_inf #+ s_aff_fix
 		
 		println("")
 		print("x_aff_fin: "); println(x_aff_fin)
@@ -171,22 +168,21 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		mu_aff = dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n 
         #mu_aff = denoise(dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n, tol)
 		
-		print("mu_aff: "); println(mu_aff)
+		# print("mu_aff: "); println(mu_aff)
 		
 
         ### centering parameter sigma
 
         #(mu==0) ? sigma=0 : sigma = (mu_aff/mu)^3
 		sigma = (mu_aff/mu)^3
-		print("sigma: "); println(sigma)
-		println("")
+		#print("sigma: "); println(sigma)
+		#println("")
         
         ### solve 10.7 
 
         rb = zeros(m)
         rc = zeros(n)
         rxs = x_aff.*s_aff.-sigma*mu 
-		mu < 1e-8 && (rxs*=η)
         #rxs = denoise(x_aff.*s_aff.-sigma*mu ,1e-15)
 		
 		# print("rxs_aff: "); println(rxs);
@@ -198,9 +194,9 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		
         ### compute search direction and step to boundary
 
-        dx = x_aff+x_cc
-        dlambda = lambda_aff+lambda_cc
-        ds = s_aff+s_cc
+        dx = x_aff_true+x_cc
+        dlambda = lambda_aff_true+lambda_cc
+        ds = s_aff_true+s_cc
 		
 		#print("dx: "); println(dx)
 
@@ -291,10 +287,6 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		r2 = denoise(norm(A'*lambda1+s1-c), tol)/(1+norm(c))
 		cx = dot(c,x1)
 		r3 = denoise(abs(cx-dot(b,lambda1)), tol)/(1+abs(cx))
-		
-		r1 -= retrieve_infinitesimals(r1, -2)
-		r2 -= retrieve_infinitesimals(r2, -2)
-		r3 -= retrieve_infinitesimals(r3, -2)
 		
 		if genLatex			
 			r = [r
