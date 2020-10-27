@@ -144,6 +144,7 @@ function iplp(Problem, tol; maxit=100, verbose=false, genLatex=false, slack_var=
     if flag == true
         #@printf("This problem is solved with optimal value of %.2f.\n\n", dot(Problem.c, x))
         print("This problem is solved with optimal value of "); println(dot(Problem.c, x));
+		print("The optimal solution is: "); println(x[setdiff(1:n0, slack_var)]);
     else
         @printf("\nThis problem does not converge in %d steps.", maxit)
     end

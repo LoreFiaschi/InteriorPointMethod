@@ -23,15 +23,14 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
     
     x0,lambda0,s0 = starting_point(A,b,c)
 
-    # @show A*x0-b
-    # @show s0
-
     iter = 0
-
-	c_inf = retrieve_infinitesimals(c, -1);
-	c_fin = c-c_inf;
 	
 	r = Matrix(undef, 0, 3);
+	r1 = sigma = one(Ban)
+
+	#c_ref = deepcopy(c);
+	c_inf = retrieve_infinitesimals(c, -1);
+	c_fin = c-c_inf;
 
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
@@ -46,175 +45,109 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
     for iter=1:maxit
         ### solve 10.1
 		
-		#=
-		print("x: "); println(x0);
-		print("s: "); println(s0);
-		println("")
-		=#
-
-		#=
-		if data_latex!=[]
-			println(x0);
-			tmp_x = revProb(data_latex.r, get_x(data_latex.g, x0));
-			println(tmp_x);
-			#println(b)
-			#println("");
-		end
-		=#
-		
         f3 = fact3(A,x0,s0)
 
         # @show iter,ind_skip
 
-		
-        rb  = A*x0-b
-        #rc_fin = -c_fin
-		#rc_inf = -c_inf
-		#rc_fix = A'*lambda0+s0
-		rc = A'*lambda0+s0-c
-        rxs = x0.*s0
-
-		rb_fin = map(x->principal(x), rb)
-		rb_inf = rb-rb_fin
-		rc_fin = map(x->principal(x), rc)
-		rc_inf = rc-rc_fin
-		rxs_fin = map(x->principal(x), rxs)
-		rxs_inf = rxs-rxs_fin
-		
-		#rc  = A'*lambda0+s0-c
-
-		#=
-		rb  = denoise(A*x0-b, 1e-15)
-        rc  = denoise(A'*lambda0+s0-c, 1e-15)
-        rxs = denoise(x0.*s0, 1e-15)
-		=#
+        rb  = denoise(A*x0-b, tol)
+        rc_fin = -c_fin
+		rc_inf = denoise(A'*lambda0+s0-c_inf, tol)
+        rxs = denoise(x0.*s0, tol)
 		
 		mu = mean(rxs)
-		#mu = denoise(mean(rxs), tol)
 		
-		
+		#=
 		print("rb: "); println(rb);
-		print("rc: "); println(rc);
+		print("rc_inf: "); println(rc_inf);
 		print("rxs: "); println(rxs);
+		=#
 		print("mu: "); println(mu)
 		println("")
 		
-		#=
-        lambda_aff_fin,x_aff_fin,s_aff_fin = solve3(f3,A,x0,s0,zeros(m),rc_fin,zeros(n))
-        lambda_aff_inf,x_aff_inf,s_aff_inf = solve3(f3,A,x0,s0,zeros(m),rc_inf,zeros(n))
-        lambda_aff_fix,x_aff_fix,s_aff_fix = solve3(f3,A,x0,s0,rb,rc_fix,rxs)
-		=#
-		#lambda_aff,x_aff,s_aff = solve3(f3,A,x0,s0,rb,rc,rxs)
 
-		lambda_aff_fin,x_aff_fin,s_aff_fin = solve3(f3,A,x0,s0,rb_fin,rc_fin,rxs_fin)
-	    lambda_aff_inf,x_aff_inf,s_aff_inf = solve3(f3,A,x0,s0,rb_inf,rc_inf,rxs_inf)
-		print("m_fin: "); println(x_aff_fin[1]/x_aff_fin[2])
-		print("m_inf: "); println(x_aff_inf[1]/x_aff_inf[2])
-		println("")
+		if sigma == 0 || sigma.p < 0
+			lambda_aff_fin = zeros(m)
+			x_aff_fin = s_aff_fin = zeros(n)
+		else
+	        lambda_aff_fin,x_aff_fin,s_aff_fin = solve3(f3,A,x0,s0,zeros(m),rc_fin,zeros(n))
+		end
+        lambda_aff_inf,x_aff_inf,s_aff_inf = solve3(f3,A,x0,s0,rb,rc_inf,rxs)
 
-		lambda_aff_true = lambda_aff = lambda_aff_fin + lambda_aff_inf #+ lambda_aff_fix 
-		x_aff_true = x_aff = x_aff_fin + x_aff_inf #+ x_aff_fix
-		s_aff_true = s_aff = s_aff_fin + s_aff_inf #+ s_aff_fix
-
-		if mu < 1e-8
-			lambda_aff_true = lambda_aff_inf.*α
-			x_aff_true = x_aff_inf.*α 
-			s_aff_true = s_aff_inf.*α
-		end		
 		
 		println("")
 		print("x_aff_fin: "); println(x_aff_fin)
 		print("x_aff_inf: "); println(x_aff_inf)
-		#=
 		println("")
-		print("m: "); println(x_aff[1]/x_aff[2])
-		print("m_fin: "); println(principal(x_aff[1])/principal(x_aff[2]))
-		print("m_inf: "); println((x_aff[1]-principal(x_aff[1]))/(x_aff[2]-principal(x_aff[2])))
-		=#
-		#print("x_aff_fix: "); println(x_aff_fix)
-		#=
-		print("x_aff: "); println(x_aff)
-		println("")
-		print("s_aff_fin: "); println(s_aff_fin)
-		print("s_aff_inf: "); println(s_aff_inf)
-		print("s_aff_fix: "); println(s_aff_fix)
-		print("s_aff: "); println(s_aff)
-		println("")
-		print("lambda_aff_fin: "); println(lambda_aff_fin)
-		print("lambda_aff_inf: "); println(lambda_aff_inf)
-		print("lambda_aff_fix: "); println(lambda_aff_fix)
-		print("lambda_aff: "); println(lambda_aff)
-		=#
-		println("")
-
-		
-		#=
-		print("x_aff: "); println(x_aff);
-		print("s_aff: "); println(s_aff);
-		=#
-
-        ### calculate alpha_aff^pri, alpha_aff^dual, mu_aff
-
-		#println("alpha_max x");
-        alpha_aff_pri  = alpha_max(x0,x_aff,1.0)
-		
-		#=
-		println("");
-		println("alpha_max s");
-		=#
-        alpha_aff_dual = alpha_max(s0,s_aff,1.0)
-
-        
-		mu_aff = dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n 
-        #mu_aff = denoise(dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n, tol)
-		
-		# print("mu_aff: "); println(mu_aff)
+			
 		
 
-        ### centering parameter sigma
+		lambda_aff = lambda_aff_fin + lambda_aff_inf
+		x_aff = x_aff_fin + x_aff_inf 
+		s_aff = s_aff_fin + s_aff_inf
 
-        #(mu==0) ? sigma=0 : sigma = (mu_aff/mu)^3
-		sigma = (mu_aff/mu)^3
-		#print("sigma: "); println(sigma)
-		#println("")
-        
-        ### solve 10.7 
+		#lambda_aff = map(x->principal(x), lambda_aff)
+		#x_aff = map(x->principal(x), x_aff)
+		#s_aff = map(x->principal(x), s_aff)
 
-        rb = zeros(m)
-        rc = zeros(n)
-        rxs = x_aff.*s_aff.-sigma*mu 
-        #rxs = denoise(x_aff.*s_aff.-sigma*mu ,1e-15)
-		
-		# print("rxs_aff: "); println(rxs);
+		#if iter>= 3
+		#	lambda_cc = zeros(m)
+		#	x_cc = s_cc = zeros(n)
+		#else
+		    ### calculate alpha_aff^pri, alpha_aff^dual, mu_aff
 
-        lambda_cc,x_cc,s_cc = solve3(f3,A,x0,s0,rb,rc,rxs)
-		
-		print("x_cc: "); println(x_cc);
-		#print("s_cc: "); println(s_cc);
-		
+			#println("alpha_max x");
+		    alpha_aff_pri  = alpha_max(x0,x_aff,1.0)
+			
+			#=
+			println("");
+			print("alpha_aff_pri: "); println(alpha_aff_pri)
+			=#
+		    alpha_aff_dual = alpha_max(s0,s_aff,1.0)
+
+		    #mu_aff = dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n
+		    mu_aff = denoise(dot(x0+alpha_aff_pri*x_aff,s0+alpha_aff_dual*s_aff)/n , tol)
+			#=
+			print("mu_aff: "); println(mu_aff)
+			println("")
+			=#
+
+		    ### centering parameter sigma
+
+			sigma = (mu_aff/mu)^3
+		    #sigma = denoise((mu_aff/mu)^3, tol)
+			#sigma < 0 && (sigma *= -1)
+			print("sigma: "); println(sigma)
+		    
+		    ### solve 10.7 
+
+		    rb = zeros(m)
+		    rc = zeros(n)
+		    rxs = denoise(x_aff.*s_aff, tol).-sigma*mu 
+			#rxs = map(x->(x.p<-1) ? zero(Ban) : x,rxs)
+
+			#print("rxs :"); println(rxs)
+			#println("")
+			# print("rxs_aff: "); println(rxs);
+
+		    lambda_cc,x_cc,s_cc = solve3(f3,A,x0,s0,rb,rc,rxs)
+
+			#lambda_cc = map(x->principal(x), lambda_cc)
+			#x_cc = map(x->principal(x), x_cc)
+			#s_cc = map(x->principal(x), s_cc)
+				
+						
+			print("x_cc: "); println(x_cc);
+			#print("s_cc: "); println(s_cc);
+			
+		#end
         ### compute search direction and step to boundary
 
-        dx = x_aff_true+x_cc
-        dlambda = lambda_aff_true+lambda_cc
-        ds = s_aff_true+s_cc
-		
-		#print("dx: "); println(dx)
+        dx = x_aff+x_cc
+        dlambda = lambda_aff+lambda_cc
+        ds = s_aff+s_cc
 
-		#=
-		println("");
-		println("alpha_max x");
-		=#
         alpha_max_pri = alpha_max(x0,dx,Inf)		
 
-        #=
-        print("s0: "); println(s0);
-        print("ds: "); println(ds);
-        println("")
-        =#
-		#=
-		println("");
-		println("alpha_max s");
-		=#
         alpha_max_dual = alpha_max(s0,ds,Inf)
 
 		#=
@@ -225,8 +158,13 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
         =#
 		
         if scaling == 0
-            alpha_pri = min(0.99*alpha_max_pri,1)
-            alpha_dual = min(0.99*alpha_max_dual,1)
+			#if sigma == 0 || sigma.p < 0
+			#	alpha_pri = 0.99*alpha_max_pri #
+		    #    alpha_dual = 0.99*alpha_max_dual #
+			#else
+		        alpha_pri = min(0.99*alpha_max_pri,1) #0.99*alpha_max_pri #
+		        alpha_dual = min(0.99*alpha_max_dual,1) #0.99*alpha_max_dual #
+			#end
         else
             x1_pri = x0+alpha_max_pri*dx
             s1_dual = s0+alpha_max_dual*ds
@@ -243,14 +181,14 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
             alpha_dual = max(1-gamma_f, f_dual)*alpha_max_dual
         end
 		
-		#=
+		println("")
 		print("alpha_x: "); println(alpha_pri);
-		print("alpha_s: "); println(alpha_dual);	
+		#print("alpha_s: "); println(alpha_dual);	
 		print("dx: "); println(dx);
-		print("ds: "); println(ds);
+		#print("ds: "); println(ds);
+		print("m: "); println(dx[1]/dx[2])
 		println("");
-		println("");
-		=#
+		#println("");
 
         # decide if the problem is unbounded
 
@@ -298,23 +236,20 @@ function solve_standardlp(A,b,c,maxit=100,tol=1e-8,verbose=false,genLatex=false;
 		#print("cx: "); println(cx);
 		#print("bl: "); println(dot(b,lambda1));
 		
+		println("")
 		print("r1: "); println(r1);
 		print("r2: "); println(r2);
 		print("r3: "); println(r3);
 		println("");
-		#=
-		print("r1 sep: "); print(norm(A*x1-b)); print("  "); println(1+norm(b))
-		print("r2 sep: "); print(norm(A'*lambda1+s1-c)); print("  "); println(1+norm(c))
-		print("r3 sep: "); print(abs(cx-dot(b,lambda1))); print("  "); println(1+abs(cx))
-		println("")
-		=#
+
+		#end
+
 
         if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num) 
 		
             #r2 = norm(A'*lambda1+s1-c)/(1+norm(c))
             # @show r2
 			
-
             if (typeof(r2)<:Real) ? r2 < tol : all(z->abs(z) < tol, r2.num) 
 
                 #cx = dot(c,x1)
