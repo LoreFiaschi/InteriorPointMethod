@@ -42,32 +42,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         rb  = A*x-b 
         rc  = A'*λ+s-c-Q*x
-        rxs = x.*s
+        rxs = x.*s 
 
 		μ = mean(rxs)
 
-		rb_fin = map(x->principal(x), rb)
-		rb_inf = rb-rb_fin
-		rc_fin = map(x->principal(x), rc)
-		rc_inf = rc-rc_fin
-		rxs_fin = map(x->principal(x), rxs)
-		rxs_inf = rxs-rxs_fin
-
-        λ_aff_fin,x_aff_fin,s_aff_fin = solve3(f3,rb_fin,rc_fin,rxs_fin)
-        λ_aff_inf,x_aff_inf,s_aff_inf = solve3(f3,rb_inf,rc_inf,rxs_inf)
-
-		if mu < 1e-8
-			λ_aff_fin = zeros(m)
-			x_aff_fin = zeros(n)
-			s_aff_fin = zeros(n)
-			λ_aff_inf.*=α
-			x_aff_inf.*=α 
-			s_aff_inf.*=α
-		end		
-
-		λ_aff = λ_aff_fin + λ_aff_inf 
-		x_aff = x_aff_fin + x_aff_inf
-		s_aff = s_aff_fin + s_aff_inf
+        λ_aff,x_aff,s_aff = solve3(f3,x,s,rb,rc,rxs)
 
 		#=
 		print("x_aff: "); println(x_aff);
@@ -102,10 +81,9 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         rb = zeros(m)
         rc = zeros(n)
-        rxs = x_aff.*s_aff.-σ*μ
-		μ < 1e-8 && (rxs*=η)
+        rxs = x_aff.*s_aff.-σ*μ 
 
-        λ_cc,x_cc,s_cc = solve3(f3,rb,rc,rxs)
+        λ_cc,x_cc,s_cc = solve3(f3,x,s,rb,rc,rxs)
 
 		#=
 		print("x_cc: "); println(x_cc);

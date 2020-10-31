@@ -12,7 +12,7 @@ function fact3(A,Q,x,s)
     return f
 end
 
-function solve3(f,x,s,rb,rc,rxs)
+function solve3(f,rb,rc,rxs)
     m = length(rb)
     n = length(rc)
 

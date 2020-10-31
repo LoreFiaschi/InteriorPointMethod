@@ -21,7 +21,17 @@ function fact3(A,x,s)
 	#println(M);
 	#println("");
     f = lu(M)
-
+	#=
+	println("")
+	println("U")
+	println(f.U)
+	println("")
+	println("L")
+	println(f.L)
+	println("")	
+	println("")
+	error()
+	=#
     return f
 end
 
