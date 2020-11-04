@@ -21,7 +21,7 @@ A = convert(Matrix{Ban}, A);
 
 b = convert(Vector{Ban}, b)
 
-tol=1e-16;
+tol=1e-8;
 genLatex = true;
 verbose = false;
 

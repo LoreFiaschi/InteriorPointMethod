@@ -7,13 +7,12 @@ using .BAN
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
   
 Q = zeros(Ban, 6, 6);
-#Q[1,1] = -2;
-#Q[2,2] = -2;
-#Q[1,2] = -η;
-#Q[2,1] = -η;
+Q[1,1] = -2;
+Q[2,2] = -2;
 
 #c = [2-η, 2-η-η*η, 0, 0, 0, 0];
-c = [-1, -1-η, 0, 0, 0, 0];
+c = [2, 2-η, 0, 0, 0, 0]; #converges to (1,2)
+#c = [0, -η, 0, 0, 0, 0]; #converges to (1,2)
 #c = [2, 2-η, 0, 0, 0, 0];
 b = [1, 1, 3, -1];
 
@@ -25,7 +24,7 @@ A = [-1 1 1  0 0  0;    # y <=  x + 1
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
-tol=1e-16;
+tol=1e-8;
 genLatex = true;
 verbose = false;
 
@@ -33,7 +32,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=100, verbose=verbose, genLatex=genLatex, slack_var=3:6);
+sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=3:6);
 
 if genLatex
 	epilogue();

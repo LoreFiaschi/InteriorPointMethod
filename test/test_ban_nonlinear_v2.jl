@@ -7,8 +7,9 @@ using .BAN
 # NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
 
 #c = [2-η, 2-η-η*η, 0, 0, 0, 0];
-c = [-1, -1-η, 0, 0, 0, 0]; # converge to (1,2)
-#c = [2, 2-η, 0, 0, 0, 0]; # converge to (2,1)
+#c = [-1, -1-η, 0, 0, 0, 0]; # converge to (1,2)
+c = [-1-η, -1, 0, 0, 0, 0]; # converge to (2,1)
+#c = [2, 2-η, 0, 0, 0, 0]; # converge to (0,1)
 b = [1, 1, 3, -1];
 
 A = [-1 1 1  0 0  0;    # y <=  x + 1

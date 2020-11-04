@@ -52,20 +52,6 @@ function ipqp(A,b,c,Q,tol; maxit=100, verbose=false, genLatex=false, slack_var=[
     if mq != n0 || length(b) != m0 || length(c) != n0
         DimensionMismatch("Dimension of matrices A, b, c, Q mismatch. Check your input.")
     end
-
-
-	###############
-    # feasibility #
-	###############
-
-	# Not needed because of bounded box
-
-	#=
-    if phaseone(A,b)
-        @warn "This problem is infeasible."
-        return IplpSolution(vec([0.]),false,vec([0.]),vec([0.]),[])
-    end
-	=#
 	
     ##############################
     # solve the original problem #
