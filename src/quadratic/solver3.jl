@@ -3,8 +3,9 @@
 function fact3(A,Q,x,s)
     m,n = size(A)
 
-    M = [zeros(m,m) A zeros(m,n);
-	     A' -Q Matrix{Float64}(I,n,n);
+#           dλ        dx        ds
+    M = [zeros(m,m)  A       zeros(m,n);
+	     A'         -Q       Matrix{Float64}(I,n,n);
 	     zeros(n,m) diagm(s) diagm(x)]
 
     f = lu(M)
@@ -16,9 +17,7 @@ function solve3(f,rb,rc,rxs)
     m = length(rb)
     n = length(rc)
 
-    b = Array([-rb; -rc; -rxs])
-
-    b = f\b
+    b = f\[rb; rc; rxs]
 
     dλ = b[1:m]
     dx = b[1+m:m+n]

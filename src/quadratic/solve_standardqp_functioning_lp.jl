@@ -201,7 +201,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		r1 = denoise(norm(A*x-b), tol)/(1+norm(b))
 		r2 = denoise(norm(A'*λ+s-c-Q*x), tol)/(1+norm(c))
 		#r3 = denoise(dot(x,s)/n, tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
-		r3 = denoise(abs(dot(c,x)-dot(b,λ)), tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
+		r3 = denoise(abs(dot(c,x)-dot(b,λ)+x'*Q*x), tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
 		
 		r1 -= retrieve_infinitesimals(r1, trash_deg)
 		r2 -= retrieve_infinitesimals(r2, trash_deg)
