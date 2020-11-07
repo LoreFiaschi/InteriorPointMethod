@@ -3,31 +3,34 @@ include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
 using .BAN
-
-# NOTICE!! Before launching assure that the tolerance considers the right powers for the stop criterion
   
-Q = zeros(Ban, 6, 6);
-Q[1,1] = -2;
-Q[2,2] = -2;
+#Q = zeros(Ban, 8, 8);
 
-#c = [2-η, 2-η-η*η, 0, 0, 0, 0];
-#c = [2, 2-η, 0, 0, 0, 0]; #converges to (1,2)
-#c = [2, 1, 0, 0, 0, 0]; #converges to (1,2)
-#c = [η, 0, 0, 0, 0, 0]; #converges to (1,2)
-#c = [0, -η, 0, 0, 0, 0]; #converges to (1,2)
-c = [2, 2, 0, 0, 0, 0];
-#b = [20, 20, 60, -20];
-b = [1, 1, 3, -1];
+Q = [10 -2  4  0  0  0  0  0;
+     -2 10  4  0  0  0  0  0;
+	  4  4  4  0  0  0  0  0;
+	  0  0  0  0  0  0  0  0;
+	  0  0  0  0  0  0  0  0;
+	  0  0  0  0  0  0  0  0;
+	  0  0  0  0  0  0  0  0;
+	  0  0  0  0  0  0  0  0];
 
-A = [-1 1 1  0 0  0;    # y <=  x + 1
-      1 1 0 -1 0  0;    # y >= -x + 1
-      1 1 0  0 1  0;    # y <= -x + 3
-     -1 1 0  0 0 -1];   # y >=  x - 1
+
+c = [-16-η, -16, -16-η, 0, 0, 0, 0, 0];
+#c = [-16, -16, -16, 0, 0, 0, 0, 0];
+
+b = [0, 1, 1, 1, 3];
+
+A = [ 0  0  1 -1  0  0  0  0;  # z >= 0
+	 -1  1  1  0  1  0  0  0;  # the four faces of the pyramid
+	  1  1 -1  0  0 -1  0  0;
+	  1 -1  1  0  0  0  1  0;
+	  1  1  1  0  0  0  0  1];
 
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
-tol=1e-8;
+tol=1e-12;
 genLatex = true;
 verbose = false;
 
@@ -35,7 +38,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=10, verbose=verbose, genLatex=genLatex, slack_var=3:6);
+sol = ipqp(A,b,c,Q, tol; maxit=20, verbose=verbose, genLatex=genLatex, slack_var=4:8);
 
 if genLatex
 	epilogue();

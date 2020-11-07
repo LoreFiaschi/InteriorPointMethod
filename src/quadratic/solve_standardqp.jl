@@ -10,6 +10,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     m,n = size(A)
 	trash_deg = minimum(map(x->min_degree(x), Q))-1 # to improve considering also b and A
 	trash_deg = min(trash_deg, minimum(map(x->min_degree(x), c))-1) # to improve considering also b and A
+	#trash_deg +=1
 	
 	var_to_show = setdiff(1:n, slack_var);
 	
@@ -73,13 +74,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		#println("")
 
 		
-		rb  = denoise(b-A*x, tol)
-        rc  = denoise(c+Q*x-A'*λ-s, tol)
-        rxs = denoise(-x.*s, tol)
+		#rb  = denoise(b-A*x, tol)
+        #rc  = denoise(c+Q*x-A'*λ-s, tol)
+        #rxs = denoise(-x.*s, tol)
 
-		#rb  = b-A*x
-        #rc  = c+Q*x-A'*λ-s
-        #rxs = -x.*s
+		rb  = b-A*x
+        rc  = c+Q*x-A'*λ-s
+        rxs = -x.*s
 		
 		print("n_rb: "); println(norm(rb))
 		print("n_rc: "); println(norm(rc))

@@ -10,7 +10,7 @@ function starting_point(A,b,c,Q)
 
     x = f\b	
     x = A'*x
-
+	
     λ = A*(c+Q*x)
     λ = f\λ
 
@@ -30,6 +30,7 @@ function starting_point(A,b,c,Q)
 
     x = x.+dx
     s = s.+ds
-
+	
+	
     return x,λ,s
 end
