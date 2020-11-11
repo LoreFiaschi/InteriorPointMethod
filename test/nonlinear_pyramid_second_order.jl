@@ -13,11 +13,11 @@ Q = [10 -2  4  0  0  0  0  0;
 	  0  0  0  0  0  0  0  0;
 	  0  0  0  0  0  0  0  0;
 	  0  0  0  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0];
+	  0  0  0  0  0  0  0  0].*η;
 
 
-c = [-16-η, -16, -16-η, 0, 0, 0, 0, 0]; # converges to (1,1,1)
-#c = [-16-η, -16-η, -16, 0, 0, 0, 0, 0]; # converges to (1.5,1.5,0)
+c = [-1-16η-η*η, -1-16η, -1-16η-η*η, 0, 0, 0, 0, 0]; # converges to (1,1,1)
+#c = [-1-16η-η*η, -1-16η-η*η, -1-16η, 0, 0, 0, 0, 0]; # converges to (1.5,1.5,0)
 
 b = [0, 1, 1, 1, 3];
 
@@ -30,7 +30,7 @@ A = [ 0  0  1 -1  0  0  0  0;  # z >= 0
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
-tol=1e-12;
+tol=1e-8;
 genLatex = true;
 verbose = false;
 
@@ -38,7 +38,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=25, verbose=verbose, genLatex=genLatex, slack_var=4:8);
+sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=4:8);
 
 if genLatex
 	epilogue();

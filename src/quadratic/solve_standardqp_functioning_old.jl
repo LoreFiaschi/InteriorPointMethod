@@ -21,12 +21,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     
     x,λ,s = starting_point(A,b,c,Q)
 	
-	print("x0: "); println(x)
-	println("")
-	print("s0: "); println(s)
-	println("")
-	print("λ0: "); println(λ)
-	println("")
+	#print("x0: "); println(x)
+	#println("")
+	#print("s0: "); println(s)
+	#println("")
+	#print("λ0: "); println(λ)
+	#println("")
 
 	# Cleaning
 	
@@ -46,7 +46,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	r = Matrix(undef, 0, 3);
 
 	if genLatex
-		println("\t\\textbf{iter} & \$\\bm{\\μ}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
+		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\hline");
 		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 		println("\t\\hline");
@@ -64,30 +64,43 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         #rb  = denoise(A*x-b, tol)
         #rc  = denoise(A'*λ+s-c-Q*x, tol)
+
+		#print("x: "); println(x)
+		#println("")
+		#print("s: "); println(s)
+		#println("")
+		#print("λ: "); println(λ)
+		#println("")
+
 		
-		rb  = A*x-b
-        rc  = A'*λ+s-c-Q*x
-        rxs = x.*s
+		#rb  = denoise(b-A*x, tol)
+        #rc  = denoise(c+Q*x-A'*λ-s, tol)
+        #rxs = denoise(-x.*s, tol)
+
+		rb  = b-A*x
+        rc  = c+Q*x-A'*λ-s
+        rxs = -x.*s
 		
-		print("n_rb: "); println(norm(rb))
-		print("n_rc: "); println(norm(rc))
-		print("n_rxs: "); println(norm(rxs))
+		#print("n_rb: "); println(norm(rb))
+		#print("n_rc: "); println(norm(rc))
+		#print("n_rxs: "); println(norm(rxs))
+		print("rxs: "); println(rxs)
 		println("")
 
-		μ = mean(rxs)
+		μ = -mean(rxs)
 		
-		print("μ: "); println(μ);
-		println("")
+		#print("μ: "); println(μ);
+		#println("")
 
         λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
 		
 		
 		print("n_x_aff_true: "); println(norm(x_aff))
 		println("")
-		print("n_s_aff_true: "); println(norm(s_aff))
-		println("")
-		print("n_λ_aff_true: "); println(norm(λ_aff))
-		println("")
+		#print("n_s_aff_true: "); println(norm(s_aff))
+		#println("")
+		#print("n_λ_aff_true: "); println(norm(λ_aff))
+		#println("")
 		
 		x_aff = denoise(x_aff, tol) 
 		s_aff = denoise(s_aff, tol)
@@ -97,10 +110,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 		print("x_aff: "); println(x_aff)
 		println("")
-		print("s_aff: "); println(s_aff)
-		println("")
-		print("λ_aff: "); println(λ_aff)
-		println("")
+		#print("s_aff: "); println(s_aff)
+		#println("")
+		#print("λ_aff: "); println(λ_aff)
+		#println("")
 
 		###########################
         # calculate α_aff, μ_aff #
@@ -114,11 +127,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		println("")
 				
         μ_aff = dot(denoise(x+α_aff_pri*x_aff, tol), denoise(s+α_aff_dual*s_aff, tol))/n
-        (μ==0) ? σ = 0 : σ = (μ_aff/μ)^3 # σ = (μ_aff/μ)^3 # 
+        σ = (μ_aff/μ)^3 # (μ==0) ? σ = 0 : σ = (μ_aff/μ)^3 # 
 		
-		print("μ_aff: "); println(μ_aff)
-		print("σ: "); println(σ)
-		println("")
+		#print("μ_aff: "); println(μ_aff)
+		#print("σ: "); println(σ)
+		#println("")
 				
 		##############
         # solve 10.7 #
@@ -126,19 +139,20 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         rb = zeros(m)
         rc = zeros(n)
-        rxs = x_aff.*s_aff.-σ*μ
+        rxs = σ*μ.-x_aff.*s_aff
 		
-		print("n_rxs: "); println(norm(rxs))
+		#print("n_rxs: "); println(norm(rxs))
+		print("rxs: "); println(rxs)
 		println("")
 
         λ_cc,x_cc,s_cc = solve3(f3,rb,rc,rxs)
 		
 		print("n_x_cc_true: "); println(norm(x_cc))
 		println("")
-		print("n_s_cc_true: "); println(norm(s_cc))
-		println("")
-		print("n_λ_cc_true: "); println(norm(λ_cc))
-		println("")
+		#print("n_s_cc_true: "); println(norm(s_cc))
+		#println("")
+		#print("n_λ_cc_true: "); println(norm(λ_cc))
+		#println("")
 
 		x_cc = denoise(x_cc, tol) 
 		s_cc = denoise(s_cc, tol)
@@ -148,10 +162,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 		print("x_cc: "); println(x_cc)
 		println("")
-		print("s_cc: "); println(s_cc)
-		println("")
-		print("λ_cc: "); println(λ_cc)
-		println("")
+		#print("s_cc: "); println(s_cc)
+		#println("")
+		#print("λ_cc: "); println(λ_cc)
+		#println("")
 		
 		##############################
         # compute direction and step #
@@ -161,12 +175,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         dλ = λ_aff+λ_cc
         ds = s_aff+s_cc
 		
-		print("dx: "); println(dx)
-		println("")
-		print("ds: "); println(ds)
-		println("")
-		print("dλ: "); println(dλ)
-		println("")
+		#print("dx: "); println(dx)
+		#println("")
+		#print("ds: "); println(ds)
+		#println("")
+		#print("dλ: "); println(dλ)
+		#println("")
 		
         α_pri = min(0.99*alpha_max(x,dx,Inf),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf),1)
@@ -200,8 +214,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 		r1 = denoise(norm(A*x-b), tol)/(1+norm(b))
 		r2 = denoise(norm(A'*λ+s-c-Q*x), tol)/(1+norm(c))
-		#r3 = denoise(dot(x,s)/n, tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
-		r3 = denoise(abs(dot(c,x)-dot(b,λ)+x'*Q*x), tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
+		r3 = denoise(dot(x,s)/n, tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
+		#r3 = denoise(abs(dot(c,x)-dot(b,λ)+x'*Q*x), tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
 		
 		r1 -= retrieve_infinitesimals(r1, trash_deg)
 		r2 -= retrieve_infinitesimals(r2, trash_deg)
@@ -215,6 +229,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		elseif verbose
             print(iter); print(" "); print(μ); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
         end
+
+		#println("")
+		#print("r1: "); println(r1)
+		#print("r2: "); println(r2)
+		#print("r3: "); println(r3)
+		#println("");
 
 
         if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num) 

@@ -6,18 +6,17 @@ using .BAN
   
 #Q = zeros(Ban, 8, 8);
 
-Q = [10 -2  4  0  0  0  0  0;
-     -2 10  4  0  0  0  0  0;
-	  4  4  4  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0;
-	  0  0  0  0  0  0  0  0];
+Q = [2+2η 2   0  0  0  0  0  0;
+      2  2+2η 0  0  0  0  0  0;
+	  0   0   4  0  0  0  0  0;
+	  0   0   0  0  0  0  0  0;
+	  0   0   0  0  0  0  0  0;
+	  0   0   0  0  0  0  0  0;
+	  0   0   0  0  0  0  0  0;
+	  0   0   0  0  0  0  0  0].*2η;
 
 
-c = [-16-η, -16, -16-η, 0, 0, 0, 0, 0]; # converges to (1,1,1)
-#c = [-16-η, -16-η, -16, 0, 0, 0, 0, 0]; # converges to (1.5,1.5,0)
+c = [-1-10η-5η*η, -1-10η-3η*η, -1-η*η, 0, 0, 0, 0, 0]; # converges to (1.67, 1.17, 0.17)
 
 b = [0, 1, 1, 1, 3];
 
@@ -30,7 +29,7 @@ A = [ 0  0  1 -1  0  0  0  0;  # z >= 0
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
-tol=1e-12;
+tol=1e-8;
 genLatex = true;
 verbose = false;
 
@@ -38,7 +37,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=25, verbose=verbose, genLatex=genLatex, slack_var=4:8);
+sol = ipqp(A,b,c,Q, tol; maxit=20, verbose=verbose, genLatex=genLatex, slack_var=4:8);
 
 if genLatex
 	epilogue();
