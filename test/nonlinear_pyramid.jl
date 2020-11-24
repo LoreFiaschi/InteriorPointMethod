@@ -3,8 +3,6 @@ include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
 using .BAN
-  
-#Q = zeros(Ban, 8, 8);
 
 Q = [10 -2  4  0  0  0  0  0;
      -2 10  4  0  0  0  0  0;
@@ -16,8 +14,8 @@ Q = [10 -2  4  0  0  0  0  0;
 	  0  0  0  0  0  0  0  0];
 
 
-c = [-16-η, -16, -16-η, 0, 0, 0, 0, 0]; # converges to (1,1,1)
-#c = [-16-η, -16-η, -16, 0, 0, 0, 0, 0]; # converges to (1.5,1.5,0)
+#c = [-16-η, -16, -16-η, 0, 0, 0, 0, 0]; # converges to (1,1,1)
+c = [-16-η, -16-η, -16, 0, 0, 0, 0, 0]; # converges to (1.5,1.5,0)
 
 b = [0, 1, 1, 1, 3];
 
@@ -30,7 +28,7 @@ A = [ 0  0  1 -1  0  0  0  0;  # z >= 0
 A = convert(Matrix{Ban}, A);     
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
-tol=1e-12;
+tol=1e-8;
 genLatex = true;
 verbose = false;
 

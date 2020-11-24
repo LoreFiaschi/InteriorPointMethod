@@ -44,13 +44,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	λ -= retrieve_infinitesimals(λ, trash_deg)
 
     iter = 0
-	
+	show = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 
 	if genLatex
-		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \\textbf{residual} & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
+		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\hline");
-		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
+		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 		println("\t\\hline");
     elseif verbose
         print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print(" "); println("0., 0."); 
@@ -126,10 +126,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         s = s+α_dual*ds
 		
 		x = denoise(x, tol)
-		x[findall(x->x<0, x)] .= 0
+		x[findall(x->x<0, x)] .= 0 #.*= -1 #
 		
 		s = denoise(s, tol)
-		s[findall(x->x<0, s)] .= 0
+		s[findall(x->x<0, s)] .= 0 #.*= -1 #
 			
 		λ = denoise(λ, tol)
 		
@@ -137,8 +137,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         # termination #
 		###############
 
-		r1 = denoise(norm(A*x-b), tol)/(1+norm(b))
-		r2 = denoise(norm(A'*λ+s-c-Q*x), tol)/(1+norm(c))
+		r1 = norm(denoise(A*x-b, tol))/(1+norm(b))
+		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/(1+norm(c))
 		r3 = denoise(dot(x,s)/n, tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
 		
 		r1 -= retrieve_infinitesimals(r1, trash_deg_r1)
@@ -146,13 +146,23 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		r3 -= retrieve_infinitesimals(r3, trash_deg)
 
         if genLatex
-			print("\t$(iter) & \$"); print_latex(μ); print("\$ & \$"); print_latex(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
+			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 			println("\t\\hline");
 			r = [r
 				 r1 r2 r3];
 		elseif verbose
-            print(iter); print(" "); print(μ); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
+            print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
         end
+		
+		if show
+			println("")
+			print("r1: "); println(r1)
+			print("r2: "); println(r2)
+			print("r3: "); println(r3)
+			println("");
+			print("μ: "); println(mean(x.*s));
+			println("")
+		end
 
 
         if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num) 

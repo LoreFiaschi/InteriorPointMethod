@@ -10,10 +10,20 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	min_deg_c = minimum(map(x->min_degree(x), c))
 	min_deg_b = minimum(map(x->min_degree(x), b))
 	
+	print("min_deg_Q: "); println(min_deg_Q);
+	print("min_deg_A: "); println(min_deg_A);
+	print("min_deg_c: "); println(min_deg_c);
+	print("min_deg_b: "); println(min_deg_b);
+	
 	trash_deg_r1 = min(min_deg_A, min_deg_b)-1;
 	trash_deg_r2 = min(min_deg_Q, min_deg_A, min_deg_c)-1
 	trash_deg = min(trash_deg_r2, min_deg_b);
 	
+	print("trash_deg_r1: "); println(trash_deg_r1)
+	print("trash_deg_r2: "); println(trash_deg_r2)
+	print("trash_deg: "); println(trash_deg)
+	println("")
+	#error()
 	#####################
 	# garbage variables #
 	#####################
@@ -112,8 +122,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		#print("x_aff_true: "); println(x_aff)
 		#println("")
 		#print("n_s_aff_true: "); println(norm(s_aff))
-		#print("s_aff_true: "); println(s_aff)
-		#println("")
+		print("s_aff_true: "); println(s_aff)
+		println("")
 		#print("n_λ_aff_true: "); println(norm(λ_aff))
 		#println("")
 		
@@ -229,11 +239,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         s = s+α_dual*ds
 		
 		x = denoise(x, tol)
-		x[findall(x->x<0, x)] .= 0
+		x[findall(x->x<0, x)] .*= -1 #.= 0
 		#x -= retrieve_infinitesimals(x, trash_deg)
 		
 		s = denoise(s, tol)
-		s[findall(x->x<0, s)] .= 0
+		s[findall(x->x<0, s)] .*= -1 #.= 0
 		#s -= retrieve_infinitesimals(s, trash_deg)
 			
 		λ = denoise(λ, tol)
@@ -260,11 +270,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
             print(iter); print(" "); print(μ); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
         end
 
-		#println("")
-		#print("r1: "); println(r1)
-		#print("r2: "); println(r2)
-		#print("r3: "); println(r3)
-		#println("");
+		println("")
+		print("r1: "); println(r1)
+		print("r2: "); println(r2)
+		print("r3: "); println(r3)
+		println("");
 
 
         if (typeof(r1)<:Real) ? r1 < tol : all(z->abs(z) < tol, r1.num) 
