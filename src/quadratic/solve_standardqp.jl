@@ -42,10 +42,20 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 	λ = denoise(λ, tol)
 	λ -= retrieve_infinitesimals(λ, trash_deg)
+	
+	#################
+	# Aux variables #
+	#################
 
     iter = 0
 	show = false
+	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
+	
+	rb_den = norm(b);
+	rb_den += magnitude(rb_den);
+	rc_den = norm(c);
+	rc_den += magnitude(rc_den);
 
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
@@ -117,6 +127,19 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         α_pri = min(0.99*alpha_max(x,dx,Inf),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf),1)
 		
+		if show_more
+			print("dx: "); println(dx)
+			println("")
+			print("ds: "); println(ds)
+			println("")
+			print("dλ: "); println(dλ)
+			println("")
+			println("")
+			print("α_pri: "); println(α_pri)
+			print("α_dual: "); println(α_dual)
+			println("")
+		end
+		
 		###############################
         # compute x^k+1, λ^k+1, s^k+1 #
 		###############################
@@ -126,10 +149,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         s = s+α_dual*ds
 		
 		x = denoise(x, tol)
-		x[findall(x->x<0, x)] .= 0 #.*= -1 #
+		x[findall(x->x<0, x)].*= -1 # .= 0 #
 		
 		s = denoise(s, tol)
-		s[findall(x->x<0, s)] .= 0 #.*= -1 #
+		s[findall(x->x<0, s)].*= -1 # .= 0 #
 			
 		λ = denoise(λ, tol)
 		
@@ -137,22 +160,33 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         # termination #
 		###############
 
-		r1 = norm(denoise(A*x-b, tol))/(1+norm(b))
-		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/(1+norm(c))
-		r3 = denoise(dot(x,s)/n, tol)/(1+abs(dot(c,x)+0.5*x'*Q*x))
+		cost_fun = dot(c,x)+0.5*x'*Q*x
+		#println(cost_fun)
+		r1 = norm(denoise(A*x-b, tol))/rb_den #(1+norm(b))
+		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/rc_den #(1+norm(c))
+		r3 = denoise(dot(x,s)/n, tol)/(magnitude(cost_fun)+abs(cost_fun))
 		
 		r1 -= retrieve_infinitesimals(r1, trash_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, trash_deg_r2)
 		r3 -= retrieve_infinitesimals(r3, trash_deg)
 
         if genLatex
-			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
+			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(cost_fun); println("\$ \\\\");
 			println("\t\\hline");
 			r = [r
 				 r1 r2 r3];
 		elseif verbose
             print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
         end
+		
+		if show_more
+			println("")
+			print("x: "); println(x)
+			println("")
+			print("s: "); println(s)
+			println("")
+			print("λ: "); println(λ)
+		end
 		
 		if show
 			println("")
@@ -177,6 +211,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
                 if (typeof(r3)<:Real) ? r3 < tol : all(z->abs(z) < tol, r3.num) 
 
 					flag = true;
+					println("")
+					print("OPTIMAL SOLUTION X: "); println(x)
+					print("OPTIMAL SOLUTION S: "); println(s)
+					print("OPTIMAL SOLUTION λ: "); println(λ)
+					println("")
 					break;
                 end
             end
