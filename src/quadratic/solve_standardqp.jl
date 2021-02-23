@@ -48,8 +48,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	#################
 
     iter = 0
-	show = false
-	show_more = false
+	show = true
+	show_more = true
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
 	rb_den = norm(b);
@@ -163,7 +163,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		cost_fun = dot(c,x)+0.5*x'*Q*x
 		#println(cost_fun)
 		r1 = norm(denoise(A*x-b, tol))/rb_den #(1+norm(b))
-		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/rc_den #(1+norm(c))
+		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/(1+norm(c)) #rc_den #
 		r3 = denoise(dot(x,s)/n, tol)/(magnitude(cost_fun)+abs(cost_fun))
 		
 		r1 -= retrieve_infinitesimals(r1, trash_deg_r1)
@@ -211,11 +211,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
                 if (typeof(r3)<:Real) ? r3 < tol : all(z->abs(z) < tol, r3.num) 
 
 					flag = true;
-					println("")
-					print("OPTIMAL SOLUTION X: "); println(x)
-					print("OPTIMAL SOLUTION S: "); println(s)
-					print("OPTIMAL SOLUTION λ: "); println(λ)
-					println("")
+					if show
+						println("")
+						print("OPTIMAL SOLUTION X: "); println(x)
+						print("OPTIMAL SOLUTION S: "); println(s)
+						print("OPTIMAL SOLUTION λ: "); println(λ)
+						println("")
+					end
 					break;
                 end
             end
