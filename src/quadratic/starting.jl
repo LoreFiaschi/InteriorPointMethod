@@ -8,9 +8,9 @@ function starting_point(A,b,c,Q)
     AA = A*A'
     f = cholesky(AA)
 
-    x = f\b	
+	x = f\b	
     x = A'*x
-
+	
     λ = A*(c+Q*x)
     λ = f\λ
 

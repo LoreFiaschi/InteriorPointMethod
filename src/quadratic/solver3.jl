@@ -5,7 +5,7 @@ function fact3(A,Q,x,s)
 
 #           dλ        dx        ds
     M = [zeros(m,m)  A       zeros(m,n);
-	     A'         -Q       Matrix{Float64}(I,n,n);
+	     A'         -Q       I; #Matrix{Float64}(I,n,n);
 	     zeros(n,m) diagm(s) diagm(x)]
 
     f = lu(M)

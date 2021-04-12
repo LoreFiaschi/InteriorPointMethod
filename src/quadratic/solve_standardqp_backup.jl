@@ -78,25 +78,21 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 		rb = denoise(rb, tol)
 		rc = denoise(rc, tol)
-		#rxs = denoise(rxs, tol)
+		rxs = denoise(rxs, tol)
 		#rb[findall(x->x.p<=trash_deg, rb)] .= 0
 		#rc[findall(x->x.p<=trash_deg, rc)] .= 0
 		#rxs[findall(x->x.p<=trash_deg, rxs)] .= 0
-		#rb -= retrieve_infinitesimals(rb, trash_deg_r1)
-		#rc -= retrieve_infinitesimals(rc, trash_deg)
-		#rxs -= retrieve_infinitesimals(rxs, trash_deg)
-		#rb -= map(x->retrieve_infinitesimals(x, degree(x)-1), rb)
-		#rc -= map(x->retrieve_infinitesimals(x, degree(x)-1), rc)
-		#rxs -= map(x->retrieve_infinitesimals(x, degree(x)-1), rxs)
+		rb -= retrieve_infinitesimals(rb, trash_deg_r1)
+		rc -= retrieve_infinitesimals(rc, trash_deg_r2)
+		rxs -= retrieve_infinitesimals(rxs, trash_deg)
 
-		#=
+		
 		print("rb: "); println(rb)
 		println("")
 		print("rc: "); println(rc)
 		println("")
 		print("rxs: "); println(rxs)
 		println("")
-		=#
 		
 		if show_more
 			print("rb: "); println(norm(rb))
@@ -109,22 +105,20 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	
 		f3 = fact3(A,Q,x,s)
         λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
-		#print("s_aff12: "); println(s_aff[12])
-		#println("")
-		
+		#=
 		print("x_aff: "); println(x_aff)
 		println("")
 		print("s_aff: "); println(s_aff)
 		println("")
 		print("λ_aff: "); println(λ_aff)
 		println("")
-		
+		=#
 		x_aff = denoise(x_aff, tol) 
 		s_aff = denoise(s_aff, tol)
 		λ_aff = denoise(λ_aff, tol)		
-		#x_aff -= retrieve_infinitesimals(x_aff, trash_deg)
-		#s_aff -= retrieve_infinitesimals(s_aff, trash_deg)
-		#λ_aff -= retrieve_infinitesimals(λ_aff, trash_deg)
+		x_aff[findall(x->x.p<=trash_deg, x_aff)] .= 0
+		s_aff[findall(x->x.p<=trash_deg, s_aff)] .= 0
+		λ_aff[findall(x->x.p<=trash_deg, λ_aff)] .= 0
 
 		###########################
         # calculate α_aff, μ_aff #
@@ -132,34 +126,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         α_aff_pri  = alpha_max(x,x_aff,1.0)
         α_aff_dual = alpha_max(s,s_aff,1.0)
-		
-		α_aff_pri  -= retrieve_infinitesimals(α_aff_pri, -1)
-		α_aff_dual -= retrieve_infinitesimals(α_aff_dual, -1)
-		
-		#(α_aff_pri <= α_aff_dual) ? α_aff_dual = α_aff_pri : α_aff_pri = α_aff_dual
-		
+				
 		μ = -mean(rxs)
-        
-        
-        #μ_aff = dot(x+α_aff_pri*x_aff, s+α_aff_dual*s_aff)/n
-		#μ_aff1 = dot(denoise(x+α_aff_pri*x_aff, tol), denoise(s+α_aff_dual*s_aff, tol))/n
-		target_x = denoise(x+α_aff_pri*x_aff, tol)
-		target_s = denoise(s+α_aff_dual*s_aff, tol)
-		target_x[findall(x->x<0, target_x)] .*= -1 #.= 0 #
-		target_s[findall(x->x<0, target_s)] .*= -1 #.= 0 #
-		target = denoise(target_x.*target_s./n, tol)
-		target[findall(x->x<0, target)] .*= -1 #.= 0 #
-		μ_aff = sum(target)
-		
-		print("μ: "); println(μ)
-		println("")
-		print("μ_aff : "); println(μ_aff)
-		println("")
-		
+        μ_aff = dot(denoise(x+α_aff_pri*x_aff, tol), denoise(s+α_aff_dual*s_aff, tol))/n
         (μ==0) ? σ = 0 : σ = (μ_aff/μ)^3 # σ = (μ_aff/μ)^3 # 
-		# when μ finite and μ_aff infinitesimal σ cuts out μ from rxs computation
-		# possible solution: when this happen, recompute σ := μ_aff/μ*(st(μ_aff/μ))^2 (supposed low impact)
-		σ -= retrieve_infinitesimals(σ, -1)
 		
 		if show_more
 			print("x_aff: "); println(x_aff)
@@ -182,24 +152,16 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
         rb = zeros(m)
         rc = zeros(n)
-        #rxs = σ*μ.-α_aff_pri*α_aff_dual*x_aff.*s_aff
-        rxs = denoise(σ*μ.-α_aff_pri*α_aff_dual*x_aff.*s_aff, tol)
-		#rxs[findall(x->x<0, rxs)] .*= -1
-		print("rxs_cc: "); println(rxs)
-		println("")
-		#rxs -= retrieve_infinitesimals(rxs, trash_deg)
-		rxs -= map(x->retrieve_infinitesimals(x, degree(x)-1), rxs)
+        rxs = σ*μ.-α_aff_pri*α_aff_dual*x_aff.*s_aff
 
         λ_cc,x_cc,s_cc = solve3(f3,rb,rc,rxs)
-		#print("s_cc12: "); println(s_cc[12])
-		#println("")
 
 		x_cc = denoise(x_cc, tol) 
 		s_cc = denoise(s_cc, tol)
 		λ_cc = denoise(λ_cc, tol)
-		#x_cc[findall(x->x.p<=trash_deg, x_cc)] .= 0
-		#s_cc[findall(x->x.p<=trash_deg, s_cc)] .= 0
-		#λ_cc[findall(x->x.p<=trash_deg, λ_cc)] .= 0
+		x_cc[findall(x->x.p<=trash_deg, x_cc)] .= 0
+		s_cc[findall(x->x.p<=trash_deg, s_cc)] .= 0
+		λ_cc[findall(x->x.p<=trash_deg, λ_cc)] .= 0
 		
 		if show_more
 			print("x_cc: "); println(x_cc)
@@ -217,17 +179,9 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         dx = x_aff+x_cc
         dλ = λ_aff+λ_cc
         ds = s_aff+s_cc
-		#dx -= retrieve_infinitesimals(dx, trash_deg)
-		#dλ -= retrieve_infinitesimals(dλ, trash_deg)
-		#ds -= retrieve_infinitesimals(ds, trash_deg)
 		
         α_pri = min(0.99*alpha_max(x,dx,Inf),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf),1)
-		
-		α_pri  -= retrieve_infinitesimals(α_pri, -1)
-		α_dual -= retrieve_infinitesimals(α_dual, -1)
-		
-		#(α_pri <= α_dual) ? α_dual = α_pri : α_pri = α_dual
 		
 		if show
 			print("dx: "); println(dx)
@@ -250,26 +204,16 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         λ = λ+α_dual*dλ
         s = s+α_dual*ds
 		
-		#if principal(mean(x.*s)) <= 10*tol*magnitude(mean(x.*s))
 		x = denoise(x, tol)
 		x[findall(x->x<0, x)] .*= -1 #.= 0 #
 		
-		#print("s12: "); println(s[12])
-		#println("")
 		s = denoise(s, tol)
 		s[findall(x->x<0, s)] .*= -1 #.= 0 #
 			
 		λ = denoise(λ, tol)
 		# possible adjusting of λ can be thought (low improvement impact)
-		#end
 		
-		# possible cleaning of x, λ and s
-		#x -= retrieve_infinitesimals(x, trash_deg_r1)
-		#s -= retrieve_infinitesimals(s, trash_deg)
-		#λ -= retrieve_infinitesimals(λ, trash_deg)
-		#x -= map(x->retrieve_infinitesimals(x, degree(x)-1), x)
-		#s -= map(x->retrieve_infinitesimals(x, degree(x)-2), s)
-		#λ -= map(x->retrieve_infinitesimals(x, degree(x)-2), λ)
+		# possible cleaning with retrieve_infinitesimals of x, λ and s
 		
 		###############
         # termination #
