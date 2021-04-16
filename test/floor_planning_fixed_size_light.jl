@@ -138,8 +138,8 @@ function benchmark_3_shift()
 	return A, b, c, Q, num_var
 end
 
-#A, b, c, Q, num_var = benchmark_3()
-A, b, c, Q, num_var = benchmark_3_shift()
+A, b, c, Q, num_var = benchmark_3()
+#A, b, c, Q, num_var = benchmark_3_shift()
 
 tol=1e-8;
 genLatex = false;

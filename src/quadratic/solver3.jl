@@ -10,6 +10,7 @@ function fact3(A,Q,x,s)
 
     f = lu(M)
 
+    #return M, f
     return f
 end
 

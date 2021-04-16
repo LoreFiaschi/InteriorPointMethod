@@ -30,7 +30,7 @@ A = convert(Matrix{Ban}, A);
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
 tol=1e-8;
-genLatex = true;
+genLatex = false;
 verbose = false;
 
 if genLatex
