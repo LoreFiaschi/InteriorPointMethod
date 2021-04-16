@@ -55,7 +55,7 @@ function ipqp(A,b,c,Q,tol; maxit=100, verbose=false, genLatex=false, slack_var=[
     ##############################
     # solve the original problem #
 	##############################
-    x,λ,s,flag,iter,r = solve_standardqp(A,b,c,Q,tol,maxit,verbose=verbose,genLatex=genLatex,adj=true,slack_var=slack_var)
+    x,λ,s,flag,iter,r = solve_standardqp(A,b,c,Q,tol,maxit,verbose=verbose,genLatex=genLatex,slack_var=slack_var)
 
     if flag == true
         println("This problem has been solved in $(iter) iterations")

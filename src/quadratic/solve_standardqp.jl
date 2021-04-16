@@ -1,4 +1,4 @@
-function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=false, adj=true, slack_var=[])
+function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
 
 	###########################
 	# compute round tresholds #
@@ -229,21 +229,22 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		###############
 
 		cost_fun = dot(c,x)+0.5*x'*Q*x
-		#=
-		print("cost: "); println(cost_fun)
-		println("")
-		=#
-		r1 = norm(denoise(A*x-b, tol))/rb_den #(1+norm(b))
-		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))/rc_den #(1+norm(Q*x+c)) #(1+norm(c)) #
-		r3 = denoise(dot(x,s)/n, tol)/(1+abs(cost_fun)) # (magnitude(cost_fun)+abs(cost_fun))
-		
+
+		r1 = norm(denoise(A*x-b, tol))
+		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))
+		r3 = denoise(dot(x,s)/n, tol)
+
 		r1 -= retrieve_infinitesimals(r1, trash_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, trash_deg_r2)
 		r3 -= retrieve_infinitesimals(r3, trash_deg)
-		
+
 		r1 -= retrieve_infinitesimals(r1, -n_levels)
 		r2 -= retrieve_infinitesimals(r2, -n_levels)
 		r3 -= retrieve_infinitesimals(r3, -n_levels)
+
+		r1 /= rb_den #(1+norm(b))
+		r2 /= rc_den #(1+norm(Q*x+c)) #(1+norm(c)) #
+		r3 /= (1+abs(cost_fun)) # (magnitude(cost_fun)+abs(cost_fun))
 
         if genLatex
 			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(cost_fun); println("\$ \\\\");
@@ -292,18 +293,15 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 						flag = true;
 						if show
 							println("")
-							print("OPTIMAL SOLUTION X: "); println(x)
-							print("OPTIMAL SOLUTION S: "); println(s)
-							print("OPTIMAL SOLUTION λ: "); println(λ)
+							print("OPTIMAL SOLUTION X: "); println(x); println("")
+							print("OPTIMAL SOLUTION S: "); println(s); println("")
+							print("OPTIMAL SOLUTION λ: "); println(λ); println("")
 							println("")
 						end
 						
 						return x,λ,s,flag,iter,r
 						
 					else
-						
-						println("Level change: $(n_levels)");
-						println("")
 						
 						x = denoise(x, tol*100)
 						x[findall(x->x<0, x)] .*= -1 #.= 0 #
