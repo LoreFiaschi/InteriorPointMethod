@@ -19,7 +19,7 @@ function constraints3(W, H)
 		   0  0  0  1  0  0;
 		   0  0  0  0  0  1];
 	 
-	b_v = [0; 10; H];
+	b_v = [0; H; H];
 
 
 	# upper aspect ratio
@@ -31,11 +31,6 @@ function constraints3(W, H)
 
 
 	# lower aspect ratio
-	#=
-	A_l = [0  0  0  1  0  0  0  0  0 -2  0  0;
-		   0  0  0  0  1  0  0  0  0  0 -2  0;
-		   0  0  0  0  0  1  0  0  0  0  0 -2];
-	=#
 	A_l = [-1  0  1  2  0  0;
 		    0 -1  1 -2  2  0;
 		    0  0 -1  0  0  2];
@@ -142,7 +137,7 @@ A, b, c, Q, num_var = benchmark_3()
 #A, b, c, Q, num_var = benchmark_3_shift()
 
 tol=1e-8;
-genLatex = false;
+genLatex = true;
 verbose = false;
 
 if genLatex

@@ -82,8 +82,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		#rb[findall(x->x.p<=trash_deg, rb)] .= 0
 		#rc[findall(x->x.p<=trash_deg, rc)] .= 0
 		#rxs[findall(x->x.p<=trash_deg, rxs)] .= 0
-		rb -= retrieve_infinitesimals(rb, trash_deg_r1)
-		rc -= retrieve_infinitesimals(rc, trash_deg_r2)
+		rb -= retrieve_infinitesimals(rb, trash_deg)
+		rc -= retrieve_infinitesimals(rc, trash_deg)
 		rxs -= retrieve_infinitesimals(rxs, trash_deg)
 		#rb -= map(x->retrieve_infinitesimals(x, degree(x)-2), rb)
 		#rc -= map(x->retrieve_infinitesimals(x, degree(x)-2), rc)

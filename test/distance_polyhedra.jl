@@ -16,7 +16,7 @@ function embed_2D(A_x, A_y, type="point";x=nothing,y=nothing)
 	if type=="point"
 		(x==nothing || y==nothing) && throw(ArgumentError("x and y must be specified in type point"))
 		
-		c = vcat(-2η*ones(4).*vcat(x,y), zeros(num_slack))
+		c = vcat(-2η*vcat(x,y), zeros(num_slack))
 		Q = 2*[1+η  0  -1   0;
 		        0  1+η  0  -1;
 			   -1   0  1+η  0;

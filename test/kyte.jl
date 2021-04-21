@@ -44,7 +44,7 @@ A = convert(Matrix{Ban}, A);
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
 tol=1e-8;
-genLatex = false;
+genLatex = true;
 verbose = false;
 
 if genLatex

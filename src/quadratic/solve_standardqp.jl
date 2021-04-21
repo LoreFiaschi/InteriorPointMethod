@@ -43,6 +43,9 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	# Standardize #
 	###############
 	
+	Q_true = copy(Q)
+	c_true = copy(c)
+	
 	_Q = map(x->retrieve_infinitesimals(x, max_deg_Q), Q)
 	_c = map(x->retrieve_infinitesimals(x, max_deg_c), c)
 	
@@ -60,10 +63,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
 		println("\t\\hline");
-		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
+		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q_true*x)+dot(c_true, x)); println("\$ \\\\");
 		println("\t\\hline");
     elseif verbose
-        print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c; A*x - b; x.*s])/norm([b;c])); print(" "); println("0., 0."); 
+        print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s + Q_true*x - c_true; A*x - b; x.*s])/norm([b;c_true])); print(" "); println("0., 0."); 
     end
 
     for iter=1:maxit
@@ -79,8 +82,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		rb = denoise(rb, tol)
 		rc = denoise(rc, tol)
 
-		rb -= retrieve_infinitesimals(rb, trash_deg_r1)
-		rc -= retrieve_infinitesimals(rc, trash_deg_r2)
+		#rb -= retrieve_infinitesimals(rb, trash_deg_r1)
+		rb -= retrieve_infinitesimals(rb, trash_deg)
+		#rc -= retrieve_infinitesimals(rc, trash_deg_r2)
+		rc -= retrieve_infinitesimals(rc, trash_deg)
 		rxs -= retrieve_infinitesimals(rxs, trash_deg)
 
 		if show_more
@@ -228,7 +233,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         # termination #
 		###############
 
-		cost_fun = dot(c,x)+0.5*x'*Q*x
+		cost_fun = dot(c_true,x)+0.5*x'*Q_true*x
 
 		r1 = norm(denoise(A*x-b, tol))
 		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))
@@ -252,7 +257,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 			r = [r
 				 r1 r2 r3];
 		elseif verbose
-            print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c - Q*x; A*x - b; x.*s])/norm([b;c])); print(" "); print(α_pri); print(" "); println(α_dual); 
+            print(iter); print(" "); print(mean(x.*s)); print(" "); print(norm([A'*λ + s - c_true - Q_true*x; A*x - b; x.*s])/norm([b;c_true])); print(" "); print(α_pri); print(" "); println(α_dual); 
         end
 		
 		if show
@@ -264,6 +269,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 			print("s: "); println(s)
 			println("")
 			print("λ: "); println(λ)
+			println("")
+			print("f(x): "); println(cost_fun)
 		end
 		
 		if show
@@ -299,6 +306,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 							println("")
 						end
 						
+						x -= retrieve_infinitesimals(x, -1)
+						s -= retrieve_infinitesimals(s, -n_levels)
+						λ -= retrieve_infinitesimals(λ, -n_levels)
+						
 						return x,λ,s,flag,iter,r
 						
 					else
@@ -316,17 +327,17 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 						x += noise
 						s += noise
 						
-						Q += _Q
-						c += _c
+						#Q += _Q
+						#c += _c
 						
 						max_deg_Q -= 1
 						max_deg_c -= 1
 						
-						_Q = map(x->retrieve_infinitesimals(x, max_deg_Q), Q)
-						_c = map(x->retrieve_infinitesimals(x, max_deg_c), c)
+						_Q = map(x->retrieve_infinitesimals(x, max_deg_Q), Q_true)
+						_c = map(x->retrieve_infinitesimals(x, max_deg_c), c_true)
 						
-						Q -= _Q
-						c -= _c
+						Q = Q_true - _Q
+						c = c_true - _c
 						
 						n_levels += 1
 					end
