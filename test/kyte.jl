@@ -26,8 +26,8 @@ function quadratic_benchmark()
 	return c, Q
 end
 
-#c, Q = linear_benchmark()
-c, Q = quadratic_benchmark()
+c, Q = linear_benchmark()
+#c, Q = quadratic_benchmark()
 
 b = [120, 210, 270, 60];
 
