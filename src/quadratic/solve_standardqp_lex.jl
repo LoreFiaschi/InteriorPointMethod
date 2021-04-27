@@ -113,8 +113,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         # calculate α_aff, μ_aff #
 		###########################
 
-        α_aff_pri  = alpha_max(x,x_aff,1.0)
-        α_aff_dual = alpha_max(s,s_aff,1.0)
+        α_aff_pri  = alpha_max(x,x_aff,1.0, n)
+        α_aff_dual = alpha_max(s,s_aff,1.0, n)
 		
 		α_aff_pri  -= retrieve_infinitesimals(α_aff_pri, -1)
 		α_aff_dual -= retrieve_infinitesimals(α_aff_dual, -1)
@@ -190,8 +190,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		ds -= map(x->retrieve_infinitesimals(x, degree(x)-n_levels), ds)
 		dλ -= map(x->retrieve_infinitesimals(x, degree(x)-n_levels), dλ)
 		
-        α_pri = min(0.99*alpha_max(x,dx,Inf),1)
-        α_dual = min(0.99*alpha_max(s,ds,Inf),1)
+        α_pri = min(0.99*alpha_max(x,dx,Inf, n),1)
+        α_dual = min(0.99*alpha_max(s,ds,Inf, n),1)
 		
 		α_pri  -= retrieve_infinitesimals(α_pri, -1)
 		α_dual -= retrieve_infinitesimals(α_dual, -1)
