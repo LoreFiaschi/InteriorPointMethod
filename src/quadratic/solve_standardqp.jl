@@ -251,7 +251,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 		r1 /= rb_den #(1+norm(b))
 		r2 /= rc_den #(1+norm(Q*x+c)) #(1+norm(c)) #
-		r3 /= (1+abs(cost_fun)) # (magnitude(cost_fun)+abs(cost_fun))
+		r3 /= (magnitude(cost_fun)+abs(cost_fun)) #(1+abs(cost_fun)) # 
 
 		# To optimize: use a branch to execute only one of the two series
 		r1 -= parametric_retrieve_infinitesimals(r1, trash_deg_r1)

@@ -251,7 +251,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 		r1 /= rb_den #(1+norm(b))
 		r2 /= rc_den #(1+norm(Q*x+c)) #(1+norm(c)) #
-		r3 /= (1+abs(cost_fun)) # (magnitude(cost_fun)+abs(cost_fun))
+		r3 /= (magnitude(cost_fun)+abs(cost_fun)) #(1+abs(cost_fun)) # 
 
         if genLatex
 			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(cost_fun); println("\$ \\\\");
