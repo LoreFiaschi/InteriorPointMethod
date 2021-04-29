@@ -9,11 +9,23 @@ function linear_benchmark()
 	Q = zeros(2,2)
 
 	#c = [-8-14η, -12]; 	# converges to (30, 50)
-	c = [-8-4η, -12-10η]; 	# converges to (0, 70)
-	#c = [-8-14η, -12-10η]; 	# converges to (30, 50)
+	#c = [-8-4η, -12-10η]; 	# converges to (0, 70)
+	c = [-8-14η, -12-10η]; 	# converges to (30, 50)
 	#c = [-8, -12-10η]; 	# converges to (0, 70)
+	
+	b = [120, 210, 270, 60];
 
-	return c, Q
+	A = [ 2  1;
+		  2  3;
+		  4  3;
+		 -1 -2];
+
+	A = [A I]
+
+	A = convert(Matrix{Ban}, A);     
+	#A = convert(SparseMatrixCSC{Ban}, A);  
+
+	return c, Q, A, b
 end
 
 function quadratic_benchmark()
@@ -23,28 +35,67 @@ function quadratic_benchmark()
 	
 	c = [-8, -12]
 	
-	return c, Q
+	b = [120, 210, 270, 60];
+
+	A = [ 2  1;
+		  2  3;
+		  4  3;
+		 -1 -2];
+
+	A = [A I]
+
+	A = convert(Matrix{Ban}, A);     
+	#A = convert(SparseMatrixCSC{Ban}, A);  
+	
+	return c, Q, A, b
 end
 
-#c, Q = linear_benchmark()
-c, Q = quadratic_benchmark()
+function NA_linear_benchmark()
 
-b = [120, 210, 270, 60];
+	Q = zeros(2,2)
+	
+	c = [-3-η, -1+2η]
+	
+	A = [ 2     1-η;
+		  2+η   3+2η;
+		  4+2η  3-η;
+		 -1+η  -2+3η];
+	
+	b = [120-3η, 210-η, 270-4η, -60-η];
+	
+	A = [A I]
+	
+	return c, Q, A, b
+end
 
-A = [ 2  1;
-      2  3;
-      4  3;
-     -1 -2];
+function NA_quadratic_benchmark()
 
-A = [A I]
+	Q = [2+η -3-2η; -3-2η 10-3η].*η;
+	
+	c = [-3-η, -1+2η]
+	
+	A = [ 2     1-η;
+		  2+η   3+2η;
+		  4+2η  3-η;
+		 -1+η  -2+3η];
+	
+	b = [120-3η, 210-η, 270-4η, -60-η];
+	
+	A = [A I]
+	
+	return c, Q, A, b
+end
+
+c, Q, A, b = linear_benchmark()
+#c, Q, A, b = quadratic_benchmark()
+#c, Q, A, b = NA_linear_benchmark()
+#c, Q, A, b = NA_quadratic_benchmark()
+
 c = vcat(c, zeros(size(A,1)))
 Q = [Q zeros(size(Q,1), size(A,1)); zeros(size(A,1), size(Q,1)+size(A,1))]
 
-A = convert(Matrix{Ban}, A);     
-#A = convert(SparseMatrixCSC{Ban}, A);     
-
 tol=1e-8;
-genLatex = false;
+genLatex = true;
 verbose = false;
 
 if genLatex

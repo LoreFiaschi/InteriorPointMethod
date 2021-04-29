@@ -124,9 +124,15 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		s_aff = denoise(s_aff, tol)
 		λ_aff = denoise(λ_aff, tol)		
 		
-		x_aff = map(x->principal(x), x_aff)
-		s_aff = map(x->principal(x), s_aff)
-		λ_aff = map(x->principal(x), λ_aff)
+		if n_levels == n_levels_max
+			x_aff -= parametric_retrieve_infinitesimals(x_aff, n_levels_max)
+			s_aff -= parametric_retrieve_infinitesimals(s_aff, n_levels_max)
+			λ_aff -= parametric_retrieve_infinitesimals(λ_aff, n_levels_max)
+		else
+			x_aff = map(x->principal(x), x_aff)
+			s_aff = map(x->principal(x), s_aff)
+			λ_aff = map(x->principal(x), λ_aff)
+		end
 
 		###########################
         # calculate α_aff, μ_aff #
@@ -143,6 +149,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		# not used rxs because some info in it is cut out (optimization to avoid double calcolous is possible)
 		μ = mean(x.*s)
         
+		# Remove .*= -1
 		target_x = denoise(x+α_aff_pri*x_aff, tol)
 		target_s = denoise(s+α_aff_dual*s_aff, tol)
 		target_x[findall(x->x<0, target_x)] .*= -1
@@ -202,9 +209,15 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         dλ = λ_aff+λ_cc
         ds = s_aff+s_cc
 
-		dx = map(x->principal(x), dx)
-		ds = map(x->principal(x), ds)
-		dλ = map(x->principal(x), dλ)		
+		if n_levels == n_levels_max
+			dx -= parametric_retrieve_infinitesimals(dx, n_levels_max)
+			ds -= parametric_retrieve_infinitesimals(ds, n_levels_max)
+			dλ -= parametric_retrieve_infinitesimals(dλ, n_levels_max)
+		else
+			dx = map(x->principal(x), dx)
+			ds = map(x->principal(x), ds)
+			dλ = map(x->principal(x), dλ)
+		end
 
         α_pri = min(0.99*alpha_max(x,dx,Inf, n),1)
         α_dual = min(0.99*alpha_max(s,ds,Inf, n),1)
@@ -236,10 +249,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         s = s+α_dual*ds
 		
 		x = denoise(x, tol)
-		x[findall(x->x<0, x)] .*= -1
+		#x[findall(x->x<0, x)] .*= -1
 		
 		s = denoise(s, tol)
-		s[findall(x->x<0, s)] .*= -1
+		#s[findall(x->x<0, s)] .*= -1
 			
 		λ = denoise(λ, tol)
 		
@@ -249,10 +262,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 		cost_fun = dot(c,x)+0.5*x'*Q*x
 
-		r1 = norm(denoise(A*x-b, tol))
-		r2 = norm(denoise(A'*λ+s-c-Q*x, tol))
-		r3 = denoise(dot(x,s)/n, tol)
-
+		# 10*tol is needed to avoid instabilities when computing the norm of a vector of BANs with ld(x) = 1e-8
+		r1 = norm(denoise(A*x-b, 10*tol))
+		r2 = norm(denoise(A'*λ+s-c-Q*x, 10*tol))
+		r3 = denoise(dot(x,s)/n, 10*tol)
+		
 		r1 -= retrieve_infinitesimals(r1, max_deg_b-n_levels)
 		r2 -= retrieve_infinitesimals(r2, max_deg_c-n_levels)
 		
@@ -325,11 +339,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 					else
 						
 						x = denoise(x, tol*100)
-						x[findall(x->x<0, x)] .*= -1
+						#x[findall(x->x<0, x)] .*= -1
 						
 
 						s = denoise(s, tol*100)
-						s[findall(x->x<0, s)] .*= -1
+						#s[findall(x->x<0, s)] .*= -1
 							
 						λ = denoise(λ, tol*100)
 						
