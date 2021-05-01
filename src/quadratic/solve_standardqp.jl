@@ -75,7 +75,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	s_deg = map(x->degree(x), s)
 
 	if genLatex
-		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{c^Tx}\$\\\\");
+		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
 		println("\t\\hline");
 		print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(0.5*(x'*Q*x)+dot(c, x)); println("\$ \\\\");
 		println("\t\\hline");
@@ -149,16 +149,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		# not used rxs because some info in it is cut out (optimization to avoid double calcolous is possible)
 		μ = mean(x.*s)
         
-		# Remove .*= -1
 		target_x = denoise(x+α_aff_pri*x_aff, tol)
 		target_s = denoise(s+α_aff_dual*s_aff, tol)
-		target_x[findall(x->x<0, target_x)] .*= -1
-		target_s[findall(x->x<0, target_s)] .*= -1
 		target = denoise(target_x.*target_s./n, tol)
-		target[findall(x->x<0, target)] .*= -1
 		μ_aff = sum(target)
 		
-        (μ==0) ? σ = 0 : σ = (μ_aff/μ)^3 # σ = (μ_aff/μ)^3
+        σ = (μ_aff/μ)^3 #(μ==0) ? σ = 0 : σ = (μ_aff/μ)^3 # 
 		σ -= retrieve_infinitesimals(σ, -1)
 		
 		if show_more
@@ -248,12 +244,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         λ = λ+α_dual*dλ
         s = s+α_dual*ds
 		
-		x = denoise(x, tol)
-		#x[findall(x->x<0, x)] .*= -1
-		
+		x = denoise(x, tol)		
 		s = denoise(s, tol)
-		#s[findall(x->x<0, s)] .*= -1
-			
 		λ = denoise(λ, tol)
 		
 		###############
@@ -324,6 +316,10 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
                 if (typeof(r3)<:Real) ? r3 < tol : all(z->abs(z) < tol, r3.num) 
 				
 					if n_levels == n_levels_max
+					
+						x -= parametric_retrieve_infinitesimals(x, levels_prim)
+						s -= parametric_retrieve_infinitesimals(s, levels_dual)
+						λ -= parametric_retrieve_infinitesimals(λ, levels_dual)
 
 						flag = true;
 						if show
@@ -337,14 +333,9 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 						return x,λ,s,flag,iter,r
 						
 					else
-						
+						# careful, maybe a too big cut
 						x = denoise(x, tol*100)
-						#x[findall(x->x<0, x)] .*= -1
-						
-
 						s = denoise(s, tol*100)
-						#s[findall(x->x<0, s)] .*= -1
-							
 						λ = denoise(λ, tol*100)
 						
 						# infinitesimal noise addition (it is infinitesimal w.r.t. the active entry)
