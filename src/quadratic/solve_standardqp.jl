@@ -255,6 +255,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		cost_fun = dot(c,x)+0.5*x'*Q*x
 
 		# 10*tol is needed to avoid instabilities when computing the norm of a vector of BANs with ld(x) = 1e-8
+		# A more precise choice of the threshold comes from Theorem 4, think about adding it
 		r1 = norm(denoise(A*x-b, 10*tol))
 		r2 = norm(denoise(A'*λ+s-c-Q*x, 10*tol))
 		r3 = denoise(dot(x,s)/n, 10*tol)
@@ -334,6 +335,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 						
 					else
 						# careful, maybe a too big cut
+						# TODO use the theoretical threshold x,s<sqrt(n*tol)
 						x = denoise(x, tol*100)
 						s = denoise(s, tol*100)
 						λ = denoise(λ, tol*100)

@@ -3,8 +3,6 @@ include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
 using .BAN
-  
-#Q = zeros(Ban, 8, 8);
 
 Q = [2+2η 2   0  0  0  0  0;
       2  2+2η 0  0  0  0  0;
@@ -13,7 +11,6 @@ Q = [2+2η 2   0  0  0  0  0;
 	  0   0   0  0  0  0  0;
 	  0   0   0  0  0  0  0;
 	  0   0   0  0  0  0  0].*2η;
-
 
 c = [-1-10η-5η*η, -1-10η-3η*η, -1-2η*η, 0, 0, 0, 0]; # converges to (1.67, 1.17, 0.17)
 
