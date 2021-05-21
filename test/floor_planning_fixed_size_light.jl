@@ -1,4 +1,4 @@
-include("../src/quadratic/ipqp.jl")
+include("../src/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 

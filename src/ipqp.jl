@@ -21,7 +21,7 @@ soln = ipqp(A,b,c,Q,tol) solves the quadratic program:
 
 minimize c'*x + 0.5*x^T*Q*x where Ax = b x>=0
 
-and the IplpSolution contains fields 
+and the IpqpSolution contains fields 
 
 [x,flag,lam,s,r]
 

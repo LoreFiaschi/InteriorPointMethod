@@ -44,7 +44,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	#################
 
     iter = 0
-	show = false
+	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -65,7 +65,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     # initial value #
 	#################
     
-    x,λ,s = starting_point(A,b,c,Q)
+    x,λ,s = starting_point(A,b,c,Q, tol)
+
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
 
 	x = map(x->principal(x), x)
 	s = map(x->principal(x), s)
@@ -73,6 +79,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
+	
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
 
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
@@ -84,6 +96,18 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     end
 
     for iter=1:maxit
+
+		Z = map(x->x==0, x)
+		if dot(Z, Z)>0 # check if at least one entry is true
+			x[Z] += map(x->η^(1-x),x_deg[Z])
+			x_deg[Z] .-= 1
+		end
+
+		Z = map(x->x==0, s)
+		if dot(Z, Z)>0
+			s[Z] += map(x->η^(1-x),s_deg[Z])
+			s_deg[Z] .-= 1
+		end
 	
         ##############
 		# solve 10.1 #
@@ -146,7 +170,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		
 		!linear && ((α_aff_pri <= α_aff_dual) ? α_aff_dual = α_aff_pri : α_aff_pri = α_aff_dual)
 		
-		# not used rxs because some info in it is cut out (optimization to avoid double calcolous is possible)
+		# not used rxs because some info in it is cut out (optimization to avoid double calculus is possible)
 		μ = mean(x.*s)
         
 		target_x = denoise(x+α_aff_pri*x_aff, tol)

@@ -3,57 +3,39 @@ obtain the starting point for PD method
 (page 410 on Wright)
 """
 
-function starting_point(A,b,c)
-	#=
-	println("");
-	println("");
-	print("A: "); println(A);
-	println("");
-	=#
+function starting_point(A,b,c,Q, tol)
+
     AA = A*A'
+    # f = cholesky(AA)
+    f = lu(AA)
 
-    f = cholesky(AA)
-    # f = ldltfact(AA)
-    # f = factorize(AA)
-
-    # tilde
-    x = f\b
+	x = f\b	
     x = A'*x
 	
-    λ = A*c
+    λ = A*(c+Q*x)
     λ = f\λ
 
     s = A'*λ
-    s = c-s
-	#=
-	print("x: "); println(x);
-	println("");
-	print("λ: "); println(λ);
-	println("");
-	print("s: "); println(s);
-	println("");
-	=#
-    # hat
+    s = c+Q*x-s
+
+	x = denoise(x, tol)		
+	s = denoise(s, tol)
+	λ = denoise(λ, tol)
+	
     dx = max(-1.5*minimum(x),0.0)
     ds = max(-1.5*minimum(s),0.0)
 
     x = x.+dx
     s = s.+ds
 
-    # ^0
     xs = dot(x,s)/2.0
 
     dx = xs/sum(s)
     ds = xs/sum(x)
-	#=
-	print("dx: "); println(dx);
-	println("");
-	print("ds: "); println(ds);
-	println("");
-	println("");
-	=#
+
     x = x.+dx
     s = s.+ds
-
+	
+	
     return x,λ,s
 end
