@@ -46,6 +46,7 @@ tol=1e-8;
 verbose = false;
 genLatex = false;
 
-sol = ipqp(A,b,c,Q, tol; maxit=20, verbose=verbose, genLatex=genLatex, slack_var=5:12);
+sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=5:12);
+nothing
 
-print("The end")
+# idea: the 

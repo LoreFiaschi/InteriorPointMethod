@@ -44,7 +44,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	#################
 
     iter = 0
-	#print_flag = false
 	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
@@ -68,12 +67,24 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     
     x,λ,s = starting_point(A,b,c,Q, tol)
 
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
+
 	x = map(x->principal(x), x)
 	s = map(x->principal(x), s)
 	λ = map(x->principal(x), λ)
 
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
+	
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
 
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
@@ -86,17 +97,14 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
     for iter=1:maxit
 
-		# TODO find a better choice for the new value in order to preserve centrality
 		Z = map(x->x==0, x)
 		if dot(Z, Z)>0 # check if at least one entry is true
-			#print_flag = true
 			x[Z] += map(x->η^(1-x),x_deg[Z])
 			x_deg[Z] .-= 1
 		end
 
 		Z = map(x->x==0, s)
 		if dot(Z, Z)>0
-			#print_flag = true
 			s[Z] += map(x->η^(1-x),s_deg[Z])
 			s_deg[Z] .-= 1
 		end
@@ -112,18 +120,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		rb = denoise(rb, tol)
 		rc = denoise(rc, tol)
 		
-		rb = map(x->principal(x), rb)
-		rc = map(x->principal(x), rc)
-		rxs = map(x->principal(x), rxs)
-		
 		
 		rb -= retrieve_infinitesimals(rb, trash_deg_b)
 		rc -= retrieve_infinitesimals(rc, trash_deg_c)
 		# in NAQP a minimum meaningful degree for rxs (i.e., μ) does not exists
 		# To avoid numerical instabilities, two monosemia are kept for each entry in rxs
-		#rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
-		
-		
+		rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
+
 		#=
 		rb -= parametric_retrieve_infinitesimals(rb, n_levels)
 		rc -= parametric_retrieve_infinitesimals(rc, n_levels)
@@ -138,16 +141,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		end
 		
 		f3 = fact3(A,Q,x,s)
-		
-		#=
-		if iter == 6
-			print("rb: "); println(rb); println("")
-			print("rc: "); println(rc); println("")
-			print("rxs: "); println(rxs); println("")
-			print("L: "); println(f3.L); println("")
-			print("U: "); println(f3.U); println("")
-		end
-		=#
 		
         λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
 		
