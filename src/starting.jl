@@ -26,11 +26,16 @@ function starting_point(A,b,c,Q, tol)
 	println("")
 	=#
 	
+	# this may change entries magnitude
+	#=
     dx = max(-1.5*minimum(x),0.0)
     ds = max(-1.5*minimum(s),0.0)
-
-    x = x.+dx
+	x = x.+dx
     s = s.+ds
+	=#
+
+	x[findall(x->x<0, x)] .*= -0.5
+	s[findall(x->x<0, s)] .*= -0.5
 	
 	#=
 	print("x': ")
@@ -43,7 +48,7 @@ function starting_point(A,b,c,Q, tol)
 
     xs = dot(x,s)/2.0 # Think about the magnitude and to shrink it
 	
-	#=
+ 	#=
 	print("xs: ")
 	println(xs)
 	println("")
@@ -56,8 +61,15 @@ function starting_point(A,b,c,Q, tol)
     dx = xs/sum(s)
     ds = xs/sum(x)
 
-    x = x.+dx
+	#=
+	x = x.+dx
     s = s.+ds
+	=#
+
+	mx = map(x->magnitude(x), x)./magnitude(dx)
+
+    x = x+(dx.*mx)
+    s = s+(ds./mx)
 	
 	#=
 	print("x'': ")
@@ -66,6 +78,7 @@ function starting_point(A,b,c,Q, tol)
 	print("s'': ")
 	println(s)
 	println("")
+	error()
 	=#
 	
     return x,λ,s

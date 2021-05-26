@@ -49,4 +49,3 @@ genLatex = false;
 sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=5:12);
 nothing
 
-# idea: the 
