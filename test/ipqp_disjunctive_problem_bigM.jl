@@ -31,9 +31,22 @@ A = [ 1  0  α  1  0  0  0  0  0  0  0  0;
       0  0  1  0  0  0  0  0  0  0  0  1;
     ];
 
-A = convert(Matrix{Ban}, A);
+b = [ α+3, -α, α+4, -α, α+9, -α+5, α+6, -α+4, 1 ];
 
-b = [ α+3, -α, α+4, -α, 9, 5, 6, 4, 1 ];
+#=	
+A = [ 0  0  0  1  0 -1  0  0  1  0 -1  0;
+      2  0  0  1 -1  0  0  0  0  0  0  0;
+      0  0  0  0  0  1  0  0  0  0  1  0;
+      0  2  0  0  0  1 -1  0  0  0  0  0;
+      2  0  0  0  0  0  0  1 -1  0  0  0;
+      1 -1  0  0  0  0  0  0 -1  0  1  0;
+      0  2  0  0  0  0  0  0  0  1 -1  0;
+      0  1  α  0  0  0  0  0  0  0 -1  0;
+      0  0  1  0  0  0  0  0  0  0  0  1;
+    ];
+
+b = [ 2, 3, α+4, 0, 14, 4, 10, 4, 1 ];
+=#
 
 # maximize -1 -1
 #c = [ 1, 1, -2α, -2α, 0, 0, 0, 0, 0, 0, 0, 0 ];
@@ -46,6 +59,6 @@ tol=1e-8;
 verbose = false;
 genLatex = false;
 
-sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=5:12);
+sol = ipqp(A,b,c,Q, tol; maxit=20, verbose=verbose, genLatex=genLatex, slack_var=5:12);
 nothing
 

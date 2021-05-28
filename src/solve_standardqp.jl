@@ -9,7 +9,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	# Needed to avoid noise of secondary gradients
 
     m,n = size(A)
-	sqrt_n = sqrt(n)
 
 	min_deg_Q = minimum(map(x->min_degree(x), Q))
 	min_deg_c = minimum(map(x->min_degree(x), c))
@@ -45,7 +44,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	#################
 
     iter = 0
-	#print_flag = false
 	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
@@ -69,12 +67,24 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     
     x,λ,s = starting_point(A,b,c,Q, tol)
 
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
+
 	x = map(x->principal(x), x)
 	s = map(x->principal(x), s)
 	λ = map(x->principal(x), λ)
 
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
+	
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
 
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
@@ -86,22 +96,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     end
 
     for iter=1:maxit
-		
-		# TODO find a better choice for the new value in order to preserve centrality
-		Z = map(x->x==0, x)
-		if dot(Z, Z)>0 # check if at least one entry is true
-			#print_flag = true
-			x[Z] = map(x->η^(1-x),x_deg[Z])
-			x_deg[Z] .-= 1
-		end
-
-		Z = map(x->x==0, s)
-		if dot(Z, Z)>0
-			#print_flag = true
-			s[Z] = map(x->η^(1-x),s_deg[Z])
-			s_deg[Z] .-= 1
-		end
-		
 	
         ##############
 		# solve 10.1 #
@@ -114,17 +108,13 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		rb = denoise(rb, tol)
 		rc = denoise(rc, tol)
 		
-		rb = map(x->principal(x), rb)
-		rc = map(x->principal(x), rc)
-		rxs = map(x->principal(x), rxs)
 		
 		rb -= retrieve_infinitesimals(rb, trash_deg_b)
 		rc -= retrieve_infinitesimals(rc, trash_deg_c)
 		# in NAQP a minimum meaningful degree for rxs (i.e., μ) does not exists
 		# To avoid numerical instabilities, two monosemia are kept for each entry in rxs
-		#rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
-		
-		
+		rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
+
 		#=
 		rb -= parametric_retrieve_infinitesimals(rb, n_levels)
 		rc -= parametric_retrieve_infinitesimals(rc, n_levels)
@@ -139,17 +129,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		end
 		
 		f3 = fact3(A,Q,x,s)
-		#f3 = LU(map(x->principal(x), f3.L)+map(x->principal(x), f3.U)-I, f3.ipiv, f3.info)
-		
-		#=
-		if iter == 6
-			print("rb: "); println(rb); println("")
-			print("rc: "); println(rc); println("")
-			print("rxs: "); println(rxs); println("")
-			print("L: "); println(f3.L); println("")
-			print("U: "); println(f3.U); println("")
-		end
-		=#
 		
         λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
 		
@@ -168,7 +147,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		end
 
 		###########################
-        # calculate α_aff, μ_aff #
+        # calculate α_aff, μ_aff  #
 		###########################
 
         α_aff_pri  = alpha_max(x,x_aff,1.0, n)
@@ -213,8 +192,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         rc = zeros(n)
         rxs = denoise(σ*μ.-α_aff_pri*α_aff_dual*x_aff.*s_aff, tol)
 		# Same choice of -2 as in previous rxs
-		#rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
-		rxs = map(x->principal(x), rxs)
+		rxs -= parametric_retrieve_infinitesimals(rxs, trash_deg_xs)
 
         λ_cc,x_cc,s_cc = solve3(f3,rb,rc,rxs)
 
@@ -349,10 +327,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
                 #r3 = abs(cx-dot(b,λ))/(1+abs(cx))
 
                 if (typeof(r3)<:Real) ? r3 < tol : all(z->abs(z) < tol, r3.num) 
-
-					println("")
-					println("CHANGE LEVEL")
-					println("")
 				
 					if n_levels == n_levels_max
 					
@@ -374,16 +348,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 					else
 						# careful, maybe a too big cut
 						# TODO use the theoretical threshold x,s<sqrt(n*tol)
-
-						println("Pre variables")
-						println("")
-						print("x: "); println(x)
-						println("")
-						print("s: "); println(s)
-						println("")
-						print("λ: "); println(λ)
-						println("")
-
 						x = denoise(x, tol*n)
 						s = denoise(s, tol*n)
 						λ = denoise(λ, tol*n)
@@ -393,15 +357,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 						B = .~N
 						x[N] += map(x->η^(1-x),x_deg[N])
 						s[B] += map(x->η^(1-x),s_deg[B])
-
-						println("Post variables")
-						println("")
-						print("x: "); println(x)
-						println("")
-						print("s: "); println(s)
-						println("")
-						print("λ: "); println(λ)
-						println("")
 
 						x_deg[N] .-= 1
 						s_deg[B] .-= 1

@@ -27,15 +27,15 @@ function starting_point(A,b,c,Q, tol)
 	=#
 	
 	# this may change entries magnitude
-	#=
     dx = max(-1.5*minimum(x),0.0)
     ds = max(-1.5*minimum(s),0.0)
 	x = x.+dx
     s = s.+ds
-	=#
-
+	
+	#=
 	x[findall(x->x<0, x)] .*= -0.5
 	s[findall(x->x<0, s)] .*= -0.5
+	=#
 	
 	#=
 	print("x': ")
@@ -61,16 +61,17 @@ function starting_point(A,b,c,Q, tol)
     dx = xs/sum(s)
     ds = xs/sum(x)
 
-	#=
+	
 	x = x.+dx
     s = s.+ds
-	=#
-
+	
+	
+	#=
 	mx = map(x->magnitude(x), x)./magnitude(dx)
 
     x = x+(dx.*mx)
     s = s+(ds./mx)
-	
+	=#
 	#=
 	print("x'': ")
 	println(x)
