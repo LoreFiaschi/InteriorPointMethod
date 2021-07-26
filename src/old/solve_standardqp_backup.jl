@@ -68,6 +68,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
     
     x,λ,s = starting_point(A,b,c,Q, tol)
 
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
+
 	x = map(x->principal(x), x)
 	s = map(x->principal(x), s)
 	λ = map(x->principal(x), λ)
@@ -75,6 +81,12 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
 	
+	println("")
+	println(x)
+	println("")
+	println(s)
+	println("")
+
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
 		println("\t\\hline");
@@ -111,17 +123,19 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		=#
 
 		if show_more
-			print("rb: "); println(rb); #println(norm(rb))
+			print("rb: "); println(norm(rb))
 			println("")
-			print("rc: "); println(rc); #println(norm(rc))
-			println("")
-			print("rxs: "); println(rxs)
+			print("rc: "); println(norm(rc))
 			println("")
 		end
 		
 		f3 = fact3(A,Q,x,s)
 		
-        λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)		
+        λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
+		
+		x_aff = denoise(x_aff, tol) 
+		s_aff = denoise(s_aff, tol)
+		λ_aff = denoise(λ_aff, tol)		
 		
 		if n_levels == n_levels_max
 			x_aff -= parametric_retrieve_infinitesimals(x_aff, n_levels_max)
@@ -132,10 +146,6 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 			s_aff = map(x->principal(x), s_aff)
 			λ_aff = map(x->principal(x), λ_aff)
 		end
-		
-		x_aff = denoise(x_aff, tol) 
-		s_aff = denoise(s_aff, tol)
-		λ_aff = denoise(λ_aff, tol)
 
 		###########################
         # calculate α_aff, μ_aff  #
@@ -191,17 +201,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 		end
 
         λ_cc,x_cc,s_cc = solve3(f3,rb,rc,rxs)
-		
-		if n_levels == n_levels_max
-			x_cc -= parametric_retrieve_infinitesimals(x_cc, n_levels_max)
-			s_cc -= parametric_retrieve_infinitesimals(s_cc, n_levels_max)
-			λ_cc -= parametric_retrieve_infinitesimals(λ_cc, n_levels_max)
-		else
-			x_cc = map(x->principal(x), x_cc)
-			s_cc = map(x->principal(x), s_cc)
-			λ_cc = map(x->principal(x), λ_cc)
-		end
-		
+
 		x_cc = denoise(x_cc, tol) 
 		s_cc = denoise(s_cc, tol)
 		λ_cc = denoise(λ_cc, tol)

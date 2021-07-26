@@ -45,7 +45,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
     iter = 0
 	show = true
-	show_more = true
+	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
 	rb_den = norm(b);
@@ -74,7 +74,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
-	
+
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
 		println("\t\\hline");

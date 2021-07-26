@@ -135,6 +135,7 @@ end
 
 A, b, c, Q, num_var = benchmark_3()
 #A, b, c, Q, num_var = benchmark_3_shift()
+A = convert(Matrix{Ban}, A);
 
 tol=1e-8;
 genLatex = true;
@@ -144,7 +145,7 @@ if genLatex
 	preamble();
 end
 
-sol = ipqp(A,b,c,Q, tol; maxit=50, verbose=verbose, genLatex=genLatex, slack_var=num_var+1:size(A,2));
+sol = ipqp(A,b,c,Q, tol; maxit=20, verbose=verbose, genLatex=genLatex, slack_var=num_var+1:size(A,2));
 
 if genLatex
 	epilogue();

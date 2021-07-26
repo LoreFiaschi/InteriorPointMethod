@@ -3,7 +3,7 @@ obtain the starting point for PD method
 (page 410 on Wright)
 """
 
-function starting_point(A,b,c,Q, tol)
+function starting_point(A,b,c,Q, tol=1e-8)
     AA = A*A'
     # f = cholesky(AA)
     f = lu(AA)
