@@ -1,6 +1,6 @@
 # STRONG ASSUMPTION: only underflows, never overflows of magnitude
 
-function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
+function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
 
 	###########################
 	# compute round tresholds #
@@ -44,8 +44,8 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 	#################
 
     iter = 0
-	show = true
-	show_more = true
+	show = false
+	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
 	rb_den = norm(b);
@@ -336,9 +336,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 				
 					if n_levels == n_levels_max
 					
+						#=
 						x -= parametric_retrieve_infinitesimals(x, levels_prim)
 						s -= parametric_retrieve_infinitesimals(s, levels_dual)
 						λ -= parametric_retrieve_infinitesimals(λ, levels_dual)
+						=#
 
 						flag = true;
 						if show
