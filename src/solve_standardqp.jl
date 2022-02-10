@@ -44,7 +44,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	#################
 
     iter = 0
-	show = false
+	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
