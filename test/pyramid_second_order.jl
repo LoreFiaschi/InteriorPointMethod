@@ -1,4 +1,5 @@
 include("../src/ipqp.jl")
+#include("../src_debug/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
@@ -25,7 +26,7 @@ A = convert(Matrix{Ban}, A);
 #A = convert(SparseMatrixCSC{Ban}, A);     
 
 tol=1e-8;
-genLatex = true;
+genLatex = false;
 verbose = false;
 
 if genLatex

@@ -1,4 +1,5 @@
 include("../src/ipqp.jl")
+#include("../src_debug/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
@@ -95,7 +96,7 @@ c = vcat(c, zeros(size(A,1)))
 Q = [Q zeros(size(Q,1), size(A,1)); zeros(size(A,1), size(Q,1)+size(A,1))]
 
 tol=1e-8;
-genLatex = true;
+genLatex = false;
 verbose = false;
 
 if genLatex

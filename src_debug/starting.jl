@@ -18,6 +18,13 @@ function starting_point(A, b, c ,Q, tol=1e-8)
     s = denoise(A'*λ, tol)
     s = denoise(c+Q*x-s, tol)
 	
+	print("true_x: ")
+	println(x)
+	println("")
+	print("true_s: ")
+	println(s)
+	println("")
+	
 	# this may change entries magnitude
     dx = max(-1.5*minimum(x),0.0)
     ds = max(-1.5*minimum(s),0.0)

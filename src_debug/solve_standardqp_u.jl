@@ -1,16 +1,16 @@
-# STRONG AsUMPTION: only underflows, never overflows of magnitude
+# STRONG ASSUMPTION: only underflows, never overflows of magnitude
 
 # mettere denoise e tagliare rispetto al degree i gradienti
 
-function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
+function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[], bounded_variables=[])
 
 	###########################
 	# compute round tresholds #
 	###########################
 
 	# Needed to avoid noise of secondary gradients
-
     m,n = size(A)
+	n_bounded = length(bounded_variables) #assume for now bounded_variables not empty
 	
 	#####################
 	# garbage variables #
@@ -24,8 +24,9 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	# Aux variables #
 	#################
 
+	unbounded_variables = setdiff(1:n, bounded_variables)
     iter = 0
-	show = false
+	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -38,20 +39,33 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	linear = false
 	
 	level = 1
-	max_level = 2
+	max_level = 3
 	
 	#################
     # initial value #
 	#################
     
-    x,λ,s = starting_point(A,b,c,Q, tol)
+    x,λ,s = starting_point(A,b,c,Q, bounded_variables, tol)
 
+	println("starting before cleaning")
+	println("x: $x")
+	println("")
+	println("s: $s")
+	println("")
+	println("λ: $λ")
+	println("")
+	println("")
+	
 	x = map(z->principal(z), x)
 	s = map(z->principal(z), s)
 	λ = map(z->principal(z), λ)
 	
+	ss = Vector{Ban}(undef, n)
+	ss[bounded_variables] = s;
+	ss[setdiff(1:n,bounded_variables)] .= 0;
+	
 	#max_deg_b = maximum(map(z->degree(z), b-A*x))-maximum(map(z->degree(z), b))
-    #max_deg_c = maximum(map(z->degree(z), c+Q*x-A'*λ-s))-maximum(map(z->degree(z), c))
+    #max_deg_c = maximum(map(z->degree(z), c+Q*x-A'*λ-ss))-maximum(map(z->degree(z), c))
 	
 	min_deg_b = minimum(map(z->min_degree(z), b))-1 
 	min_deg_c = minimum(map(z->min_degree(z), c))-1
@@ -61,7 +75,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
-	λ_deg = map(x->degree(x), λ)
+	λ_deg = map(x->0, λ)
 	
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
@@ -79,14 +93,14 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		##############
 
 		rb  = map(z->principal(z), denoise(b-A*x, tol))
-        rc  = map(z->principal(z), denoise(c+Q*x-A'*λ-s, tol))
-        rxs = map(z->principal(z), denoise(-x.*s, tol))
+        rc  = map(z->principal(z), denoise(c+Q*x-A'*λ-ss, tol))
+        rxs = map(z->principal(z), denoise(-x[bounded_variables].*s, tol))
 		
 		rb -= retrieve_infinitesimals(rb, min_deg_b)
 		rc -= retrieve_infinitesimals(rc, min_deg_c)
 		
 
-		if show_more
+		if true
 			print("rb: "); println(rb); #println(norm(rb))
 			println("")
 			print("rc: "); println(rc); #println(norm(rc))
@@ -95,16 +109,19 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 			println("")
 		end
 		
-		f3 = fact3(A,Q,x,s,tol)
+		f3 = fact3(A,Q,x,s,bounded_variables)
 		
-        λ_aff,x_aff,s_aff = solve3(f3,rb,rc,rxs)
+        λ_aff_true,x_aff_true,s_aff_true = solve3(f3,rb,rc,rxs)
 		
-		x_aff = map(z->principal(z), denoise(x_aff, tol/10)) # denoise only if gradient's entry is truly not impactful
-		s_aff = map(z->principal(z), denoise(s_aff, tol/10))
-		λ_aff = map(z->principal(z), denoise(λ_aff, tol/10))
+		x_aff = map(z->principal(z), denoise(x_aff_true, tol/10)) # denoise only if gradient's entry is truly not impactful
+		s_aff = map(z->principal(z), denoise(s_aff_true, tol/10))
+		λ_aff = map(z->principal(z), denoise(λ_aff_true, tol/10))
 		
 		for i in eachindex(x_aff)
 			x_aff[i] -= retrieve_infinitesimals(x_aff[i], x_deg[i]-1)
+		end
+		
+		for i in eachindex(s_aff)
 			s_aff[i] -= retrieve_infinitesimals(s_aff[i], s_deg[i]-1)
 		end
 		
@@ -118,27 +135,27 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
         # calculate α_aff, μ_aff  #
 		###########################
 
-        α_aff_pri  = principal(alpha_max(x,x_aff,1.0))
-        α_aff_dual = principal(alpha_max(s,s_aff,1.0))
+        α_aff_pri  = principal(alpha_max(x,x_aff,1.0, bounded_variables))
+        α_aff_dual = principal(alpha_max(s,s_aff,1.0, 1:n_bounded))
 		
 		!linear && ((α_aff_pri <= α_aff_dual) ? α_aff_dual = α_aff_pri : α_aff_pri = α_aff_dual)
 		
-		# not used rxs because some info in it is cut out (optimization to avoid double calculus is posible)
-		μ = mean(x.*s)
+		# not used rxs because some info in it is cut out (optimization to avoid double calculus is possible)
+		μ = mean(x[bounded_variables].*s)
         
 		target_x = x+α_aff_pri*x_aff
 		target_s = s+α_aff_dual*s_aff
-		target = denoise(target_x.*target_s./n, tol)
+		target = denoise(target_x[bounded_variables].*target_s./n_bounded, tol)
 		μ_aff = sum(target)
 		
         σ = (μ_aff/μ)^3
 		
 		if show_more
-			print("x_aff: "); println(x_aff)
+			print("x_aff: "); println(x_aff_true)
 			println("")
-			print("s_aff: "); println(s_aff)
+			print("s_aff: "); println(s_aff_true)
 			println("")
-			print("λ_aff: "); println(λ_aff)
+			print("λ_aff: "); println(λ_aff_true)
 			println("")
 			println("")
 			print("α_aff_pri: "); println(α_aff_pri)
@@ -154,7 +171,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 
         rb = zeros(m)
         rc = zeros(n)
-        rxs = denoise(σ*μ.-α_aff_pri*α_aff_dual*x_aff.*s_aff, tol)
+        rxs = denoise(σ*μ.-α_aff_pri*α_aff_dual*x_aff[bounded_variables].*s_aff, tol)
 		
 		if show_more
 			print("rxs: "); println(rxs)
@@ -182,6 +199,9 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		
 		for i in eachindex(dx)
 			dx[i] -= retrieve_infinitesimals(dx[i], x_deg[i]-1)
+		end
+		
+		for i in eachindex(ds)
 			ds[i] -= retrieve_infinitesimals(ds[i], s_deg[i]-1)
 		end
 		
@@ -189,8 +209,8 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 			dλ[i] -= retrieve_infinitesimals(dλ[i], λ_deg[i]-1)
 		end
 
-        α_pri = principal(min(0.99*alpha_max(x,dx,Inf),1))
-        α_dual = principal(min(0.99*alpha_max(s,ds,Inf),1))
+        α_pri = principal(min(0.99*alpha_max(x,dx,Inf, bounded_variables),1))
+        α_dual = principal(min(0.99*alpha_max(s,ds,Inf, 1:n_bounded),1))
 		
 		!linear && ((α_pri <= α_dual) ? α_dual = α_pri : α_pri = α_dual)
 		
@@ -220,10 +240,12 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		###############
 
 		cost_fun = dot(c,x)+0.5*x'*Q*x
+		ss[bounded_variables] = s;
 
 		r1 = norm(denoise(A*x-b,tol))
-		r2 = norm(denoise(A'*λ+s-c-Q*x,tol))
-		r3 = dot(x,s)/n
+		r2 = norm(denoise(A'*λ+ss-c-Q*x,tol))
+		r3 = dot(x[bounded_variables],s)/n_bounded
+		
 		r1 /= rb_den
 		r2 /= rc_den 
 		r3 /= (magnitude(cost_fun)+abs(cost_fun)) 
@@ -232,13 +254,12 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		#r2 = denoise(r2,tol)
 		r3 = denoise(r3,tol)
 		
-		r1 -= retrieve_infinitesimals(r1, 0-level)
-		r2 -= retrieve_infinitesimals(r2, 0-level)
+		r1 -= retrieve_infinitesimals(r1, 1-level)
+		r2 -= retrieve_infinitesimals(r2, 1-level)
 		r1 -= retrieve_infinitesimals(r1, min_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, min_deg_r2)
-		r3 = principal(r3)
-		r3 -= retrieve_infinitesimals(r3, 1-level)
-		#r3 = standard_part(r3)
+		#r3 = principal(r3)
+		r3 = standard_part(r3)
 		
         if genLatex
 			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(cost_fun); println("\$ \\\\");
@@ -268,7 +289,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 			print("r2: "); println(r2)
 			print("r3: "); println(r3)
 			println("");
-			print("μ: "); println(mean(x.*s));
+			print("μ: "); println(mean(x[bounded_variables].*s));
 			println("")
 		end
 
@@ -281,7 +302,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
                 #cx = dot(c,x)
                 #r3 = abs(cx-dot(b,λ))/(1+abs(cx))
 
-                if all(z->abs(z) < tol*10, r3.num) #r3 < tol*10 #
+                if r3 < tol*10 #all(z->abs(z) < tol*10, r3.num)
 				
 					if level == max_level
 
@@ -297,26 +318,48 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 						return x,λ,s,flag,iter,r
 					end
 					
-					x = denoise(x, 10*tol)
-					s = denoise(s, 10*tol)
-					λ = denoise(λ, 10*tol)
+					println("")
+					println("***********************")
+					println("*** level optimized ***")
+					println("***********************")
+					println("")
+					
+					x = denoise(x, n*tol)
+					s = denoise(s, n*tol)
+					λ = denoise(λ, n*tol)
 					
 					N = map(x->x==0, x) # mask inactive/active entries of x/s
-					B = .~N
-					x[N] += map(x->η^(1-x),x_deg[N])
+					B = .~N[bounded_variables]
+					N_bound = copy(N)
+					for i in eachindex(N_bound)
+						N_bound[i] && !(i in bounded_variables) && (N_bound[i] = false)
+					end
+					x[N_bound] += map(x->η^(1-x),x_deg[bounded_variables][N[bounded_variables]])
 					s[B] += map(x->η^(1-x),s_deg[B])
 					
-					#x_deg[N] .-= 1
-					#s_deg[B] .-= 1
+					#=
+					x_deg[N_bound] .-= 1
+					s_deg[B] .-= 1
 					
-					#L = map(x->x==0, λ)
-					#λ_deg[L] .-= 1
+					L = map(x->x==0, λ)
+					λ_deg[L] .-= 1
+					=#
 					
-					x_deg .-= 1
-					s_deg .-= 1
-					λ_deg .-= 1
+					x_deg .-= 1 # the solution might not be standard, which means that the next
+					s_deg .-= 1 # level's gredient might need to modify infinitesimal monosemia
+					λ_deg .-= 1 # w.r.t. the current degree of the entries
 					
 					level += 1
+					
+					println("new x:")
+					println(x);
+					println("")
+					println("new s:")
+					println(s);
+					println("")
+					println("new λ:")
+					println(λ);
+					println("")
 					
                 end
             end

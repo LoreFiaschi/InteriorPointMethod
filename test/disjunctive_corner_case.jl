@@ -1,4 +1,4 @@
-include("../src/ipqp.jl")
+include("../src_debug/ipqp.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
 include("../../Utils/src/createTable.jl")
 
@@ -17,7 +17,7 @@ function load_param(experiment)
 		return [-1;  1;  1; -1; -1;  1;  1; -1; zeros(Ban,2+11)], zeros(Ban,21,21);
 	# min l1 norm
 	else
-		return [-1-η;  1-η;  1-η; -1-η; -1-η;  1-η;  1-η; -1-η; zeros(Ban,2+11)], zeros(Ban,21,21);
+		return [1+η;  -1+η;  -1+η;  1+η;  1+η;  -1+η;  -1+η;  1+η; zeros(Ban,2+11)], zeros(Ban,21,21);
 	end
 end
 
@@ -43,7 +43,7 @@ A_dom = [-1  1  1 -1 zeros(Ban, 1, 4)  0  0;
 A = [A; A_dom];
 A = [A [zeros(Ban,1,11); I]] # only last 11 constraints are <=, the others are =
 
-b = [1; zeros(Ban, 11)].*η;
+b = [1; zeros(Ban, 11)];
 
 c, Q = load_param(experiment);
 
@@ -51,11 +51,11 @@ tol = 1e-8;
 genLatex = false;
 verbose = false;
 
-sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=5:25);
+sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=11:21);
 
 print("\tSolution: ");
 println([sol.x[1]-sol.x[2]+sol.x[5]-sol.x[6]; sol.x[3]-sol.x[4]+sol.x[7]-sol.x[8]]);
-print("\tDisjoint flag: "); println(sol.x[14:15]);
+print("\tDisjoint flag: "); println(sol.x[9:10]);
 println("")
 
 nothing

@@ -1,6 +1,6 @@
 # STRONG ASSUMPTION: only underflows, never overflows of magnitude
 
-function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
+function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
 
 	###########################
 	# compute round tresholds #
@@ -74,7 +74,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
-
+	
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
 		println("\t\\hline");
@@ -270,7 +270,7 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
         # termination #
 		###############
 
-		cost_fun = dot(c,x)+0.5*x'*Q*x
+		cost_fun = denoise(dot(c,x)+0.5*x'*Q*x, tol*10)
 
 		# 10*tol is needed to avoid instabilities when computing the norm of a vector of BANs with ld(x) = 1e-8
 		# A more precise choice of the threshold comes from Theorem 4, think about adding it
@@ -336,9 +336,11 @@ function solve_standardqp(A,b,c,Q, tol=1e-8, maxit=100; verbose=false, genLatex=
 				
 					if n_levels == n_levels_max
 					
+						#=
 						x -= parametric_retrieve_infinitesimals(x, levels_prim)
 						s -= parametric_retrieve_infinitesimals(s, levels_dual)
 						λ -= parametric_retrieve_infinitesimals(λ, levels_dual)
+						=#
 
 						flag = true;
 						if show

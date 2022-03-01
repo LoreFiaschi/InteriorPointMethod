@@ -25,7 +25,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	#################
 
     iter = 0
-	show = false
+	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -38,7 +38,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	linear = false
 	
 	level = 1
-	max_level = 2
+	max_level = 3
 	
 	#################
     # initial value #
@@ -46,6 +46,15 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
     
     x,λ,s = starting_point(A,b,c,Q, tol)
 
+	println("starting before cleaning")
+	println("x: $x")
+	println("")
+	println("s: $s")
+	println("")
+	println("λ: $λ")
+	println("")
+	println("")
+	
 	x = map(z->principal(z), x)
 	s = map(z->principal(z), s)
 	λ = map(z->principal(z), λ)
@@ -86,7 +95,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		rc -= retrieve_infinitesimals(rc, min_deg_c)
 		
 
-		if show_more
+		if true
 			print("rb: "); println(rb); #println(norm(rb))
 			println("")
 			print("rc: "); println(rc); #println(norm(rc))
@@ -297,6 +306,12 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 						return x,λ,s,flag,iter,r
 					end
 					
+					println("")
+					println("***********************")
+					println("*** level optimized ***")
+					println("***********************")
+					println("")
+					
 					x = denoise(x, 10*tol)
 					s = denoise(s, 10*tol)
 					λ = denoise(λ, 10*tol)
@@ -317,6 +332,16 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 					λ_deg .-= 1
 					
 					level += 1
+					
+					println("new x:")
+					println(x);
+					println("")
+					println("new s:")
+					println(s);
+					println("")
+					println("new λ:")
+					println(λ);
+					println("")
 					
                 end
             end
