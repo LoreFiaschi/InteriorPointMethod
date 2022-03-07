@@ -231,9 +231,13 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
         # compute x^k+1, λ^k+1, s^k+1 #
 		###############################
 
-        x = denoise(x+α_pri*dx, tol)
-        λ = denoise(λ+α_dual*dλ, tol)
-        s = denoise(s+α_dual*ds, tol)
+        #x = denoise(x+α_pri*dx, tol)
+        #λ = denoise(λ+α_dual*dλ, tol)
+        #s = denoise(s+α_dual*ds, tol)
+
+		x = x+α_pri*dx
+        λ = λ+α_dual*dλ
+        s = s+α_dual*ds
 		
 		###############
         # termination #
@@ -242,13 +246,11 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		cost_fun = dot(c,x)+0.5*x'*Q*x
 		ss[bounded_variables] = s;
 
-		r1 = norm(denoise(A*x-b,tol))
-		r2 = norm(denoise(A'*λ+ss-c-Q*x,tol))
+		r1 = norm(denoise((A*x-b)./rb_den,tol))
+		r2 = norm(denoise((A'*λ+ss-c-Q*x)./rc_den,tol))
 		r3 = dot(x[bounded_variables],s)/n_bounded
-		
-		r1 /= rb_den
-		r2 /= rc_den 
-		r3 /= (magnitude(cost_fun)+abs(cost_fun)) 
+
+		#r3 /= (magnitude(cost_fun)+abs(cost_fun)) # Careful! using only mu to predict the magnitude
 		
 		#r1 = denoise(r1,tol)
 		#r2 = denoise(r2,tol)
@@ -258,8 +260,9 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		r2 -= retrieve_infinitesimals(r2, 1-level)
 		r1 -= retrieve_infinitesimals(r1, min_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, min_deg_r2)
-		#r3 = principal(r3)
-		r3 = standard_part(r3)
+		r3 = principal(r3)
+		r3 -= retrieve_infinitesimals(r3, 1-level)
+		#r3 = standard_part(r3)
 		
         if genLatex
 			print("\t$(iter) & \$"); print_latex(mean(x.*s)); print("\$ & \$"); print_latex(x[var_to_show]); print("\$ & \$"); print_latex(cost_fun); println("\$ \\\\");
@@ -302,7 +305,11 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
                 #cx = dot(c,x)
                 #r3 = abs(cx-dot(b,λ))/(1+abs(cx))
 
-                if r3 < tol*10 #all(z->abs(z) < tol*10, r3.num)
+                if all(z->abs(z) < tol*10, r3.num) #r3 < tol #
+
+					x = denoise(x, n*tol)
+					s = denoise(s, n*tol)
+					λ = denoise(λ, n*tol)
 				
 					if level == max_level
 
@@ -323,10 +330,6 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 					println("*** level optimized ***")
 					println("***********************")
 					println("")
-					
-					x = denoise(x, n*tol)
-					s = denoise(s, n*tol)
-					λ = denoise(λ, n*tol)
 					
 					N = map(x->x==0, x) # mask inactive/active entries of x/s
 					B = .~N[bounded_variables]

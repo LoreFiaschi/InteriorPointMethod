@@ -220,9 +220,13 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
         # compute x^k+1, λ^k+1, s^k+1 #
 		###############################
 
-        x = denoise(x+α_pri*dx, tol)
-        λ = denoise(λ+α_dual*dλ, tol)
-        s = denoise(s+α_dual*ds, tol)
+        #x = denoise(x+α_pri*dx, tol)
+        #λ = denoise(λ+α_dual*dλ, tol)
+        #s = denoise(s+α_dual*ds, tol)
+
+		x = x+α_pri*dx
+        λ = λ+α_dual*dλ
+        s = s+α_dual*ds
 		
 		###############
         # termination #
@@ -281,17 +285,21 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 			println("")
 		end
 
-        if all(z->abs(z) < tol*10, r1.num) 
+        if all(z->abs(z) < tol, r1.num) 
 		
             #r2 = norm(A'*λ+s-c)/(1+norm(c))			
 
-            if all(z->abs(z) < tol*10, r2.num) 
+            if all(z->abs(z) < tol, r2.num) 
 
                 #cx = dot(c,x)
                 #r3 = abs(cx-dot(b,λ))/(1+abs(cx))
 
-                if all(z->abs(z) < tol*10, r3.num) #r3 < tol*10 #
+                if all(z->abs(z) < tol, r3.num) #r3 < tol*10 #
 				
+					x = denoise(x, 10*tol)
+					s = denoise(s, 10*tol)
+					λ = denoise(λ, 10*tol)
+
 					if level == max_level
 
 						flag = true;
@@ -311,10 +319,6 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 					println("*** level optimized ***")
 					println("***********************")
 					println("")
-					
-					x = denoise(x, 10*tol)
-					s = denoise(s, 10*tol)
-					λ = denoise(λ, 10*tol)
 					
 					N = map(x->x==0, x) # mask inactive/active entries of x/s
 					B = .~N

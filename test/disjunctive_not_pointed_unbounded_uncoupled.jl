@@ -41,7 +41,7 @@ tol = 1e-8;
 genLatex = false;
 verbose = false;
 
-sol = ipqp(A,b,c,Q, tol; maxit=15, verbose=verbose, genLatex=genLatex, slack_var=7:size(A,2), bounded_variables=3:size(A,2));# slack_var=11:21);
+sol = ipqp(A,b,c,Q, tol; maxit=25, verbose=verbose, genLatex=genLatex, slack_var=6:size(A,2), bounded_variables=3:size(A,2));# slack_var=11:21);
 
 print("\tSolution: "); 
 println([sol.x[1], sol.x[2], sol.x[3], sol.x[4]]);
