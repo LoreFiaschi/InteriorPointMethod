@@ -26,7 +26,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 
 	unbounded_variables = setdiff(1:n, bounded_variables)
     iter = 0
-	show = true
+	show = false
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -100,7 +100,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		rc -= retrieve_infinitesimals(rc, min_deg_c)
 		
 
-		if true
+		if false
 			print("rb: "); println(rb); #println(norm(rb))
 			println("")
 			print("rc: "); println(rc); #println(norm(rc))

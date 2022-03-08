@@ -5,17 +5,18 @@ include("../../Utils/src/createTable.jl")
 using LinearAlgebra
 using .BAN
 
+# meta variables:
+# 	max_level = 3
+# 	retrieve_infinitesimals for r1, r2, r3: 1-level
+
 #
 # x1 => 2 && x2 <= -4
 #
 # -x1 + x2 <= 1
 #
 #
-# transformed into
-#
-#
-#
-#
+
+# vars: x12 x22 x11 x12 y
 
 M = α;
 
@@ -43,6 +44,6 @@ verbose = false;
 
 sol = ipqp(A,b,c,Q, tol; maxit=25, verbose=verbose, genLatex=genLatex, slack_var=6:size(A,2), bounded_variables=3:size(A,2));# slack_var=11:21);
 
-print("\tSolution: "); 
-println([sol.x[1], sol.x[2], sol.x[3], sol.x[4]]);
-print("\tDisjoint flag: "); println(sol.x[5]);
+#print("\tSolution: "); 
+#println([sol.x[1], sol.x[2], sol.x[3], sol.x[4]]);
+#print("\tDisjoint flag: "); println(sol.x[5]);
