@@ -11,23 +11,7 @@ function fact3(A,Q,x,s, bounded_variables, tol)
 	     zeros(l_bounded_variables,m) zeros(l_bounded_variables, l_unbounded_variables) diagm(s)                diagm(x[bounded_variables])]
 
     f = lu(M)
-#=
-	idx = map(x->(x!=0 && denoise(x, tol) ==0), f.factors)
-#	print("minimum nonzero value LU: ")
-#	println(minimum(abs.(f.factors[idx])))
-	println("small values")
-	println(f.factors[idx])
-	println("")
-
-
-	println("diagonal elements")
-	for i in 1:size(f.factors,2)
-		println(f.factors[i,i])
-	end
-	println("")
-=#
-	f = LU{eltype(M),typeof(M)}(denoise(f.factors, tol/10), f.ipiv, f.info)
-
+	f = LU{eltype(M),typeof(M)}(denoise(f.factors, tol), f.ipiv, f.info)
 	
     return f
 end

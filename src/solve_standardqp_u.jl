@@ -26,7 +26,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 
 	unbounded_variables = setdiff(1:n, bounded_variables)
     iter = 0
-	show = true
+	show = false
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -46,15 +46,6 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	#################
     
     x,λ,s = starting_point(A,b,c,Q, bounded_variables, tol)
-
-	println("starting before cleaning")
-	println("x: $x")
-	println("")
-	println("s: $s")
-	println("")
-	println("λ: $λ")
-	println("")
-	println("")
 	
 	x = map(z->principal(z), x)
 	s = map(z->principal(z), s)
@@ -75,8 +66,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	
 	x_deg = map(x->degree(x), x)
 	s_deg = map(x->degree(x), s)
-	λ_deg = map(x->degree(x), λ)
-	#λ_deg = map(x->0, λ)
+	λ_deg = map(x->0, λ)
 	
 	if genLatex
 		println("\t\\textbf{iter} & \$\\bm{\\mu}\$ & \$\\bm{x}\$ & \$\\bm{f(x)}\$\\\\");
@@ -326,12 +316,6 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 						return x,λ,s,flag,iter,r
 					end
 					
-					println("")
-					println("***********************")
-					println("*** level optimized ***")
-					println("***********************")
-					println("")
-					
 					N = map(x->x==0, x) # mask inactive/active entries of x/s
 					B = .~N[bounded_variables]
 					N_bound = copy(N)
@@ -354,16 +338,6 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 					λ_deg .-= 1 # w.r.t. the current degree of the entries
 					
 					level += 1
-					
-					println("new x:")
-					println(x);
-					println("")
-					println("new s:")
-					println(s);
-					println("")
-					println("new λ:")
-					println(λ);
-					println("")
 					
                 end
             end
