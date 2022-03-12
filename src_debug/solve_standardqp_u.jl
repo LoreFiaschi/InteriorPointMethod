@@ -257,7 +257,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		#r2 = denoise(r2,tol)
 		r3 = denoise(r3,tol)
 		
-		r1 -= retrieve_infinitesimals(r1, 1-level)
+		r1 -= retrieve_infinitesimals(r1, 0-level)
 		r2 -= retrieve_infinitesimals(r2, 1-level)
 		r1 -= retrieve_infinitesimals(r1, min_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, min_deg_r2)
