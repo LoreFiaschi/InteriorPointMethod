@@ -1,5 +1,6 @@
 include("../src_debug/ipqp_u.jl")
 include("../../ArithmeticNonStandarNumbersLibrary/src/BAN.jl")
+#include("../../ArithmeticNonStandarNumbersLibrary/src/BAN_s3_isbits.jl")
 include("../../Utils/src/createTable.jl")
 
 using LinearAlgebra

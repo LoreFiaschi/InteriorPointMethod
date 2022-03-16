@@ -14,7 +14,7 @@ function linear_benchmark()
 	c = [-8-14η, -12-10η]; 	# converges to (30, 50)
 	#c = [-8, -12-10η]; 	# converges to (0, 70)
 	
-	b = [120, 210, 270, 60];
+	b = [120, 210, 270, -60];
 
 	A = [ 2  1;
 		  2  3;
@@ -36,7 +36,7 @@ function quadratic_benchmark()
 	
 	c = [-8, -12]
 	
-	b = [120, 210, 270, 60];
+	b = [120, 210, 270, -60];
 
 	A = [ 2  1;
 		  2  3;
