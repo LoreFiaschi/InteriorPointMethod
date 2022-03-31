@@ -297,11 +297,11 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 			println("")
 		end
 
-        if all(z->abs(z) < tol*10, r1.num) 
+        if all(z->abs(z) < tol, r1.num) 
 		
             #r2 = norm(A'*λ+s-c)/(1+norm(c))			
 
-            if all(z->abs(z) < tol*10, r2.num) 
+            if all(z->abs(z) < tol, r2.num) 
 
                 #cx = dot(c,x)
                 #r3 = abs(cx-dot(b,λ))/(1+abs(cx))

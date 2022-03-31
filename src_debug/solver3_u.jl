@@ -19,14 +19,14 @@ function fact3(A,Q,x,s, bounded_variables, tol)
 	println(f.factors[idx])
 	println("")
 
-=#
+
 	println("diagonal elements")
 	for i in 1:size(f.factors,2)
 		println(f.factors[i,i])
 	end
 	println("")
-
-	f = LU{eltype(M),typeof(M)}(denoise(f.factors, tol/10), f.ipiv, f.info)
+=#
+	#f = LU{eltype(M),typeof(M)}(denoise(f.factors, tol/10), f.ipiv, f.info)
 
 	
     return f

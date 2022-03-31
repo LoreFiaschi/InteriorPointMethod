@@ -39,7 +39,7 @@ tol = 1e-8;
 genLatex = false;
 verbose = false;
 
-sol = ipqp(A,b,c,Q, tol; maxit=16, verbose=verbose, genLatex=genLatex, slack_var=6:size(A,2), bounded_variables=3:size(A,2));
+sol = ipqp(A,b,c,Q, tol; maxit=10, verbose=verbose, genLatex=genLatex, slack_var=6:size(A,2), bounded_variables=3:size(A,2));
 
 nothing
 
