@@ -2,7 +2,9 @@
 
 # mettere denoise e tagliare rispetto al degree i gradienti
 
-function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; verbose=false, genLatex=false, slack_var=[])
+# Non compatibile con isbits al momento
+
+function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, maxit=100; primal_starting_point=false, verbose=false, genLatex=false, slack_var=[])
 
 	###########################
 	# compute round tresholds #
@@ -25,7 +27,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	#################
 
     iter = 0
-	show = false
+	show = true
 	show_more = false
 	r = Matrix(undef, 0, 3); # just for genLatex purposes
 	
@@ -38,13 +40,13 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 	linear = false
 	
 	level = 1
-	max_level = 2
+	max_level = 1
 	
 	#################
     # initial value #
 	#################
     
-    x,λ,s = starting_point(A,b,c,Q, tol)
+    x,λ,s = starting_point(A,b,c,Q, primal_starting_point, tol)
 
 	x = map(z->principal(z), x)
 	s = map(z->principal(z), s)
@@ -237,7 +239,7 @@ function solve_standardqp(A::Matrix,b::Vector,c::Vector,Q::Matrix, tol=1e-8, max
 		r1 -= retrieve_infinitesimals(r1, min_deg_r1)
 		r2 -= retrieve_infinitesimals(r2, min_deg_r2)
 		r3 = principal(r3)
-		r3 -= retrieve_infinitesimals(r3, 1-level)
+		r3 -= retrieve_infinitesimals(r3, 0-level)
 		#r3 = standard_part(r3)
 		
         if genLatex

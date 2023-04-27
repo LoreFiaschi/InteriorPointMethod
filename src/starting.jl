@@ -4,13 +4,17 @@ case of coupled variables
 page 229
 """
 
-function starting_point(A, b, c ,Q, tol=1e-8)
+function starting_point(A, b, c ,Q, primal_starting_point, tol=1e-8)
     AA = denoise(A*A', tol)
     f = lu(AA)
 	f = LU{eltype(AA),typeof(AA)}(denoise(f.factors, tol), f.ipiv, f.info)
-	
-	x = denoise(f\b, tol)
-	x = denoise(A'*x, tol)
+
+	if starting_point == nothing
+		x = denoise(f\b, tol)
+		x = denoise(A'*x, tol)
+	else
+		x = primal_starting_point
+	end
 	
     λ = denoise(A*(c+Q*x), tol)
     λ = denoise(f\λ, tol)

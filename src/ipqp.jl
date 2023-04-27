@@ -39,7 +39,7 @@ norm([A'*lam + s - c; A*x - b; x.*s])/norm([b;c]) <= tol
 and fails if this takes more than maxit iterations.
 """
 
-function ipqp(A::Matrix,b::Vector,c::Vector,Q::Matrix,tol; maxit=100, verbose=false, genLatex=false, slack_var=[])
+function ipqp(A::Matrix,b::Vector,c::Vector,Q::Matrix,tol; maxit=100, primal_starting_point=nothing, verbose=false, genLatex=false, slack_var=[])
     
 	###################
 	# test input data #
@@ -55,7 +55,7 @@ function ipqp(A::Matrix,b::Vector,c::Vector,Q::Matrix,tol; maxit=100, verbose=fa
     ##############################
     # solve the original problem #
 	##############################
-    x,λ,s,flag,iter,r = solve_standardqp(A,b,c,Q,tol,maxit,verbose=verbose,genLatex=genLatex,slack_var=slack_var)
+    x,λ,s,flag,iter,r = solve_standardqp(A,b,c,Q,tol,maxit,primal_starting_point=primal_starting_point,verbose=verbose,genLatex=genLatex,slack_var=slack_var)
 
     if flag == true
         println("This problem has been solved in $(iter) iterations")
